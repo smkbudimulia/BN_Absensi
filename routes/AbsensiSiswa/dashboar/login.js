@@ -3,10 +3,11 @@ const router = express.Router();
 const conn = require('../../../Database/ConfigDB');
 const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
+const bcrypt = require('bcrypt');
 
 dotenv.config();
 
-router.post('/login', (req, res) => {
+router.post('/login', async (req, res) => {
     const { username, password } = req.body;
 
     // Memeriksa apakah ada data yang dikirim atau tidak
@@ -14,37 +15,51 @@ router.post('/login', (req, res) => {
         return res.status(400).json({ error: 'Username dan Password tidak benar' });
     }
 
-    // Mencocokkan username dan password pada database
-    conn.select()
-        .from('admin')
-        .where('nama_admin', username)
-        .andWhere('pass', password)
-        .first()
-        .then((user) => {
-            if (!user) {
-                return res.status(401).json({ error: 'Username & Password Salah' });
+    try {
+        // Mencari admin berdasarkan username
+        const admin = await conn('admin')
+            .where('username', username)
+            .first();
+
+        if (!admin) {
+            return res.status(401).json({ error: 'Username atau Password salah' });
+        }
+
+        // Bandingkan password yang diinputkan dengan hash yang disimpan
+        const isMatch = await bcrypt.compare(password, admin.pass);
+
+        if (!isMatch) {
+            return res.status(401).json({ error: 'Username atau Password salah' });
+        }
+
+        // Membuat payload untuk JWT
+        const payload = {
+            id_admin: admin.id_admin,
+            username: admin.username,
+            status: admin.status,
+        };
+
+        // Membuat token JWT
+        const token = jwt.sign(payload, process.env.TOKEN_PRIVATE, { expiresIn: '1h' });
+
+        // Mengirimkan token dan data pengguna sebagai respon
+        res.json({
+            success: true,
+            message: 'Login berhasil',
+            token: token,
+            data: {
+                id_admin: admin.id_admin,
+                nama_admin: admin.nama_admin,
+                username: admin.username,
+                email: admin.email,
+                // Tambahkan data lain yang ingin dikirim ke frontend
             }
-
-            const payload = {
-                username: user.nama_admin,
-                status: user.status,
-            };
-
-            // Membuat token JWT
-            const token = jwt.sign(payload, process.env.TOKEN_PRIVATE, { expiresIn: '1h' }); // Token kedaluwarsa dalam 1 jam
-            res.header('auth-token', token);
-            const Alldata = {
-                id: user.id_admin,
-                nama: user.nama_admin,
-                username: payload.username,                
-               
-            };
-            res.json(Alldata);
-        })
-        .catch((error) => {
-            console.log(error);
-            res.status(500).json({ error: 'Ada Kesalahan' });
         });
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: 'Ada Kesalahan' });
+    }
 });
 
 module.exports = router;

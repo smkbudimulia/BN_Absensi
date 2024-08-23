@@ -14,7 +14,7 @@ app.get('/', (req, res)=>{
 })
 
 app.use('/api', LoginDash)
-app.use('/dash', masterAdmin)
+app.use('/admin', masterAdmin)
 
 app.listen(port, ()=>{
     console.log(`brtjalan di port http://localhost:${port}`)
