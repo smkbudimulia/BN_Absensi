@@ -46,7 +46,7 @@ router.post('/login', async (req, res) => {
         res.cookie('auth-token', token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',//gunakan https di production
-            maxAge: 600000 // 10 menit
+            maxAge: 60000 // 1 menit
         })
 
         // Mengirimkan token dan data pengguna sebagai respon
