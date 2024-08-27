@@ -4,8 +4,18 @@ const conn = require('../../../Database/ConfigDB');
 const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
 const bcrypt = require('bcrypt');
+const cors = require('cors');
+const cookieParser = require('cookie-parser');
 
 dotenv.config();
+const app = express();
+
+// Gunakan middleware CORS dengan konfigurasi default
+app.use(cors());
+
+// Middleware untuk parsing JSON dan cookie
+app.use(express.json());
+app.use(cookieParser());
 
 //proses untuk login dan membuat token
 router.post('/login', async (req, res) => {
