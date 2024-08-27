@@ -13,6 +13,8 @@ const verifyToken = require('../../../middleware/jwToken')
 //   next();
 // });
 
+router.use(verifyToken);
+
 // Fungsi untuk mengacak karakter untuk ID
 function generateRandomString(length) {
   const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -79,7 +81,7 @@ router.post('/add-Admin', async (req, res) => {
 
 
 //operasi read: melihat semua akun
-router.get('/all-Admin', verifyToken, (req, res) => {
+router.get('/all-Admin', (req, res) => {
   conn('admin')
   .select('*')
   .then((data) => {

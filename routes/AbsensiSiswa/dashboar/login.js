@@ -7,6 +7,7 @@ const bcrypt = require('bcrypt');
 
 dotenv.config();
 
+//proses untuk login dan membuat token
 router.post('/login', async (req, res) => {
     const { username, password } = req.body;
 
@@ -68,5 +69,13 @@ router.post('/login', async (req, res) => {
         res.status(500).json({ error: 'Ada Kesalahan' });
     }
 });
+
+
+//proses logout dan menghapus token dari cookei browser pengguna
+router.post('/logout', (req, res)=>{
+    res.cookie('auth-token', '', {maxAge: 0})
+
+    res.json({ success: true, message: 'berhasil keluar' })
+})
 
 module.exports = router;
