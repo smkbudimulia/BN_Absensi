@@ -42,6 +42,13 @@ router.post('/login', async (req, res) => {
         // Membuat token JWT
         const token = jwt.sign(payload, process.env.TOKEN_PRIVATE, { expiresIn: '1h' });
 
+        //set token sebagai http-only cookie
+        res.cookie('auth-token', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',//gunakan https di production
+            maxAge: 600000 // 10 menit
+        })
+
         // Mengirimkan token dan data pengguna sebagai respon
         res.json({
             success: true,
