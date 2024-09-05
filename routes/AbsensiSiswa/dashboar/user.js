@@ -13,7 +13,7 @@ const verifyToken = require('../../../middleware/jwToken')
 //   next();
 // });
 
-router.use(verifyToken);
+// router.use(verifyToken);
 
 // Fungsi untuk mengacak karakter untuk ID
 function generateRandomString(length) {
