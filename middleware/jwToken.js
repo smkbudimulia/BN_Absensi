@@ -1,26 +1,26 @@
-const jwt = require('jsonwebtoken')
+const jwt = require('jsonwebtoken');
 
 function auth(req, res, next) {
-    // Mengambil token dari header atau cookie
-    const token = req.header('auth-token') || req.cookies['auth-token'];
+    // Mengambil token dari header Authorization atau cookie 'lukim'
+    const token = req.header('Authorization')?.replace('Bearer ', '') || req.cookies['lukim'];
     
-    // Jika token tidak ditemukan, kirimkan respon 401
+    // Jika token tidak ditemukan, kirimkan respon 401 (Unauthorized)
     if (!token) {
-        return res.status(401).send('Tidak memiliki akses token');
+        return res.status(401).json({ error: 'Akses ditolak, token tidak ditemukan.' });
     }
 
     try {
         // Verifikasi token dengan secret key
         const verifikasiToken = jwt.verify(token, process.env.TOKEN_PRIVATE);
         
-        // Menyimpan informasi user dari token yang terverifikasi ke req.user
+        // Simpan informasi user yang terverifikasi ke req.user
         req.user = verifikasiToken;
         
         // Lanjutkan ke middleware berikutnya atau route handler
         next();
     } catch (error) {
-        // Jika terjadi kesalahan (token tidak valid), kirimkan respon 400
-        res.status(400).send('Token tidak valid atau tidak diizinkan');
+        // Jika verifikasi token gagal, kirimkan respon 400 (Bad Request)
+        res.status(400).json({ error: 'Token tidak valid atau tidak diizinkan.' });
     }
 }
 
