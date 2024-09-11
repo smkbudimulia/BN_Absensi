@@ -84,10 +84,10 @@ router.post('/login', async (req, res) => {
 
 
 //proses logout dan menghapus token dari cookei browser pengguna
-// router.post('/logout', (req, res)=>{
-//     res.cookie('lukim', '', {maxAge: 0})
+router.post('/logout', (req, res)=>{
+    res.cookie('lukim', '', {maxAge: 0})
 
-//     res.json({ success: true, message: 'berhasil keluar' })
-// })
+    res.json({ success: true, message: 'berhasil keluar' })
+})
 
 module.exports = router;
