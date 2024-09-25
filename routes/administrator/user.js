@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const conn = require('../../../Database/ConfigDB')// koneksi ke database
+const conn = require('../../Database/ConfigDB')// koneksi ke database
 const bcrypt = require('bcrypt')
-const verifyToken = require('../../../middleware/jwToken')
+const verifyToken = require('../../middleware/jwToken')
 
 
 //middleware untuk mendapatkan variabel umum
@@ -81,7 +81,7 @@ router.post('/add-Admin', async (req, res) => {
 
 
 //operasi read: melihat semua akun
-router.get('/all-Admin', verifyToken, (req, res) => {
+router.get('/all-Admin',  (req, res) => {
   conn('admin')
   .select('*')
   .then((data) => {

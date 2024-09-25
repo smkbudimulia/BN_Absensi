@@ -4,8 +4,9 @@ const app = express()
 const port = 3005
 
 //rute data
-const masterAdmin = require('./routes/AbsensiSiswa/dashboar/user')
-const LoginDash = require('./routes/AbsensiSiswa/dashboar/login')
+const Admin = require('./routes/administrator/user')
+const LoginDash = require('./routes/login')
+const  DataSiswa = require('./routes/masterData/siswa')
 
 // Gunakan cors dengan konfigurasi untuk mengizinkan permintaan dari http://localhost:3000
 app.use(cors({
@@ -16,11 +17,13 @@ app.use(cors({
 app.use(express.json())
 
 app.get('/', (req, res)=>{
-    res.send('wkwkw expressss')
+    res.send('dimas ellek')
 })
 
+//End point / Url API
 app.use('/api', LoginDash)
-app.use('/admin', masterAdmin)
+app.use('/admin', Admin)
+app.use('/siswa', DataSiswa)
 
 app.listen(port, ()=>{
     console.log(`brtjalan di port http://localhost:${port}`)
