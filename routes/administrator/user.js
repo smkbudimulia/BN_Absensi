@@ -13,7 +13,8 @@ const verifyToken = require('../../middleware/jwToken')
 //   next();
 // });
 
-// router.use(verifyToken);
+// untuk mengaktifkan verivikasi token ke semua aksi
+router.use(verifyToken);
 
 // Fungsi untuk mengacak karakter untuk ID
 function generateRandomString(length) {
@@ -29,13 +30,16 @@ function generateRandomString(length) {
 }
 
 // operasi post: menambah data akun atau administrasi baru
-router.post('/add-Admin', async (req, res) => {
+router.post('/add-Admin',  async (req, res) => {
   const { nama_admin, alamat, jenis_kelamin, no_telp, email, username, pass, foto, status } = req.body;
   const idAcak = generateRandomString(5);
   
   // Validasi input kosong
   if (!nama_admin || !alamat || !jenis_kelamin || !no_telp || !email || !username || !pass || !foto || !status) {
-      return res.status(400).json({ error: 'Data tidak boleh kosong' });
+      return res.status(400).json({ 
+        Status: 400,
+        error: 'Data tidak boleh kosong' 
+      });
   }
 
   try {
@@ -46,7 +50,10 @@ router.post('/add-Admin', async (req, res) => {
           .first();
 
       if (existingAdmin) {
-          return res.status(400).json({ error: 'ID Admin atau Email sudah terdaftar' });
+          return res.status(400).json({ 
+            Status: 400,
+            error: 'ID Admin atau Email sudah terdaftar' 
+          });
       }
 
       //Hash pass sebelum disimpan(enkripsi)
@@ -68,64 +75,150 @@ router.post('/add-Admin', async (req, res) => {
 
       await conn('admin').insert(addData);
 
-      res.json({
+      res.status(201).json({
+          Status: 201,
           success: true,
-          message: 'Admin berhasil ditambahkan',
+          message: 'Ok',
           data: addData
       });
   } catch (error) {
       console.log(error);
-      res.status(500).json({ error: 'Error 500 - Internal Server Error' });
+      res.status(500).json({ 
+        Status: 500,
+        error: 'Internal Server Error' 
+      });
   }
 });
 
 
 //operasi read: melihat semua akun
-router.get('/all-Admin',  (req, res) => {
+router.get('/all-Admin',   (req, res) => {
   conn('admin')
   .select('*')
   .then((data) => {
-   res.json(data)
+   res.status(200).json({
+    Status: 200,
+    message: 'Ok',
+    data: data
+   })
   })
   .catch((error) => {
    console.log(error)
-   res.status(500).json({error: 'error 500'})
+   res.status(500).json({
+    Status: 500,
+    message: 'Server Error',
+    error: error.message
+  })
   })
    });
  
 
 //operasi put/ update: merubah data yang sudah ada di database
-router.put('/Edit-admin/:id', (req, res) =>{
-  const id_admin = req.params.id
-  const update_admin = req.body
+router.put('/Edit-admin/:id', async (req, res) => {
+  const id_admin = req.params.id;
+  const { nama_admin, alamat, jenis_kelamin, no_telp, email, username, foto, status } = req.body;
 
-  conn('admin')
-    .where('id_admin', id_admin )
-    .update(update_admin)
-    .then(() =>{
-      res.json({ ...update_admin})
-    })
-    .catch((error) =>{
-      console.log(error)
-      res.status(500).json({error: 'error 500'})
-    })
-})
+  // Validasi input kosong
+  if (!nama_admin || !alamat || !jenis_kelamin || !no_telp || !email || !username || !foto || !status) {
+    return res.status(400).json({
+      Status: 400,
+      error: 'Data tidak boleh kosong'
+    });
+  }
+
+  try {
+    // Cek apakah admin dengan ID tersebut ada
+    const existingAdmin = await conn('admin')
+      .where('id_admin', id_admin)
+      .first();
+
+    if (!existingAdmin) {
+      return res.status(404).json({
+        Status: 404,
+        error: 'Admin tidak ditemukan'
+      });
+    }
+
+    // Cek duplikasi email atau username
+    const duplicateCheck = await conn('admin')
+      .where(function() {
+        this.where('email', email).orWhere('username', username);
+      })
+      .andWhere('id_admin', '!=', id_admin)
+      .first();
+
+    if (duplicateCheck) {
+      return res.status(400).json({
+        Status: 400,
+        error: 'Email atau Username sudah digunakan'
+      });
+    }
+
+    // Update data admin
+    const update_admin = {
+      nama_admin,
+      alamat,
+      jenis_kelamin,
+      no_telp,
+      email,
+      username,
+      foto,
+      status
+    };
+
+    await conn('admin')
+      .where('id_admin', id_admin)
+      .update(update_admin);
+
+    res.status(200).json({
+      Status: 200,
+      message: 'Admin berhasil diperbarui',
+      data: update_admin
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      statusCode: 500,
+      error: 'Error 500 - Internal Server Error'
+    });
+  }
+});
+
 
 //operasi delete: menghapus data by Id
-router.delete('/hapus-admin/:id', (req, res)=>{
-  const id_admin = req.params.id
-  
-  conn('admin')
-    .where('id_admin', id_admin)
-    .del()
-    .then(()=>{
-      res.json({message: 'Data berhasil dihapus'})
-    })
-    .catch((error)=>{
-      console.log(error)
-      res.status(500).json({error:'error 500'})
-    })
-})
+router.delete('/hapus-admin/:id', async (req, res) => {
+  const id_admin = req.params.id;
+
+  try {
+    // Cek apakah admin dengan ID tersebut ada
+    const existingAdmin = await conn('admin')
+      .where('id_admin', id_admin)
+      .first();
+
+    if (!existingAdmin) {
+      return res.status(404).json({
+        Status: 404,
+        error: 'Admin tidak ditemukan'
+      });
+    }
+
+    // Hapus admin berdasarkan id_admin
+    await conn('admin')
+      .where('id_admin', id_admin)
+      .del();
+
+    res.status(200).json({
+      Status: 200,
+      message: 'Data admin berhasil dihapus'
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      Status: 500,
+      error: 'Error 500 - Internal Server Error'
+    });
+  }
+});
 
 
 module.exports = router;

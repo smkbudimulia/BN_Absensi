@@ -54,14 +54,14 @@ router.post('/login', async (req, res) => {
         const token = jwt.sign(payload, process.env.TOKEN_PRIVATE, { expiresIn: '1h' });
 
         //set token sebagai http-only cookie
-        res.cookie('lukim', token, {
+        res.cookie('token', token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',//gunakan https di production
             maxAge: 60000 // 1 menit
         })
 
-        //tmabahkan header 'lukim' ke dalam respons
-        res.set('lukim', token)
+        //tmabahkan header 'token' ke dalam respons
+        res.set('token', token)
         // Mengirimkan token dan data pengguna sebagai respon
         res.json({
             success: true,
@@ -85,7 +85,7 @@ router.post('/login', async (req, res) => {
 
 //proses logout dan menghapus token dari cookei browser pengguna
 router.post('/logout', (req, res)=>{
-    res.cookie('lukim', '', {maxAge: 0})
+    res.cookie('token', '', {maxAge: 0})
 
     res.json({ success: true, message: 'berhasil keluar' })
 })

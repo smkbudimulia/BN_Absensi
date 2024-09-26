@@ -1,8 +1,10 @@
 const jwt = require('jsonwebtoken');
 
 function auth(req, res, next) {
-    // Mengambil token dari header Authorization atau cookie 'lukim'
-    const token = req.header('Authorization')?.replace('Bearer ', '') || req.cookies['lukim'];
+    
+    // Mengambil token dari header Authorization atau cookie 'token'
+    const token = req.header('Authorization')?.replace('Bearer ', '') || req.cookies['token'];
+    console.log('token:', token);
     
     // Jika token tidak ditemukan, kirimkan respon 401 (Unauthorized)
     if (!token) {
