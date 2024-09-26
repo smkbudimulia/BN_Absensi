@@ -92,7 +92,11 @@ router.post('/add-Admin',  async (req, res) => {
 
 
 //operasi read: melihat semua akun
+<<<<<<< HEAD
 router.get('/all-Admin',   (req, res) => {
+=======
+router.get('/all-Admin', verifyToken,  (req, res) => {
+>>>>>>> 8044a293953c8e85db839abffa6f1fafd2a11946
   conn('admin')
   .select('*')
   .then((data) => {
