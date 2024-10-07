@@ -144,7 +144,8 @@ router.put('/Edit-admin/:id', async (req, res) => {
     // Cek duplikasi email atau username
     const duplicateCheck = await conn('admin')
       .where(function() {
-        this.where('email', email).orWhere('username', username);
+        this.where('email', email)
+        .orWhere('username', username);
       })
       .andWhere('id_admin', '!=', id_admin)
       .first();

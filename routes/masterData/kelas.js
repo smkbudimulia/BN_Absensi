@@ -22,12 +22,12 @@ function generateRandomString(length) {
   }
 
   // Operasi Post: luntuk menambah data baru
-router.post('/new-tahun-pelajaran', async (req, res) =>{
-    const { id_tahun_pelajaran, id_admin, tahun, aktif } =req.body
+router.post('/new-kelas', async (req, res) =>{
+    const { id_kelas, id_admin, kelas } =req.body
     const idAcak = generateRandomString(5);
 
     //validai input data
-    if (!tahun) {
+    if (!kelas) {
         return res.status(400).json({
             Status: 400,
             error: 'Data tidak boleh kosong' 
@@ -36,23 +36,23 @@ router.post('/new-tahun-pelajaran', async (req, res) =>{
 
     try {
         // cek duplikasi data
-        const existingTahunAjaran = await conn('tahun_ajaran')
-        .where('id_tahun_pelajaran', id_tahun_pelajaran)
-        .orWhere('tahun', tahun)
+        const existingKelas = await conn('kelas')
+        .where('id_kelas', id_kelas)
+        .orWhere('kelas', kelas)
         .first()
 
-        if (existingTahunAjaran) {
+        if (existingKelas) {
             return res.status(400).json({ 
                 Status: 400,
                 error: 'data sudah ada' 
               });
         }
         const addData = {
-            id_tahun_pelajaran: idAcak, 
+            id_kelas: idAcak, 
             id_admin, 
-            tahun, 
-            aktif}
-        await conn('tahun_ajaran').insert(addData)
+            kelas
+            }
+        await conn('kelas').insert(addData)
 
         res.status(201).json({
             Status: 201,
@@ -71,9 +71,9 @@ router.post('/new-tahun-pelajaran', async (req, res) =>{
 })
 
 //operasi read: melihat semua data
-router.get('/all-tahun-pelajaran', (req, res)=>{
+router.get('/all-kelas', (req, res)=>{
     try {
-        conn('tahun_ajaran')
+        conn('kelas')
         .select('*')
         .then((data)=>{
             res.status(200).json({
@@ -93,12 +93,12 @@ router.get('/all-tahun-pelajaran', (req, res)=>{
 })
 
 // Operasi Put/ Update: merubah data yang sudah ada pada database
-router.put('/edit-tahun-pelajaran/:id', async (req, res) =>{
-    const id_tahun_pelajaran = req.params.id;
-    const {  id_admin, tahun, aktif } = req.body
+router.put('/edit-kelas/:id', async (req, res) =>{
+    const id_kelas = req.params.id;
+    const { kelas } = req.body;
 
     //validasi inputan kosong
-    if (!tahun || !aktif) {
+    if (!kelas) {
         return res.status(400).json({
             Status: 400,
             error: 'Data tidak boleh kosong'
@@ -107,43 +107,44 @@ router.put('/edit-tahun-pelajaran/:id', async (req, res) =>{
 
     try {
         //cek apakah data dengan ID yg dimaksud ada
-        const existingTahunAjaran = await conn('tahun_ajaran')
-        .where('id_tahun_pelajaran', id_tahun_pelajaran)
+        const existingKelas = await conn('kelas')
+        .where('id_kelas', id_kelas)
         .first()
 
-        if (!existingTahunAjaran) {
+        if (!existingKelas) {
             return res.status(404).json({
                 Status: 404,
                 error: 'Tidak ada data'
             })            
         }
-        const duplicateCheck = await conn('tahun_ajaran')
+
+        const duplicateCheck = await conn('kelas')
         .where(function(){
-            this.where('tahun', tahun)
+            this.where('kelas', kelas)
+            
         })
         .first()
-        
+
         if (duplicateCheck) {
             return res.status(400).json({
                 Status: 400,
-                error: 'Tahun sudah ada'
+                error: 'Kelas sudah ada'
             })
         }
 
         //update data
-        const updateTahunPelajaran = {
-            tahun,
-            aktif
+        const updateKelas = {
+            kelas
         }
 
-        await conn('tahun_ajaran')
-        .where('id_tahun_pelajaran', id_tahun_pelajaran)
-        .update(updateTahunPelajaran)
+        await conn('kelas')
+        .where('id_kelas', id_kelas)
+        .update(updateKelas)
 
         res.status(200).json({
             Status: 200,
             message: 'Data berhasil diperbarui',
-            data: updateTahunPelajaran
+            data: updateKelas
         })
     } catch (error) {
         console.error(error);
@@ -155,24 +156,24 @@ router.put('/edit-tahun-pelajaran/:id', async (req, res) =>{
 })
 
 //operasi delete: menghapus data by Id
-router.delete('/hapus-tahun-pelajaran/:id', async (req, res)=>{
-    const id_tahun_pelajaran = req.params.id;
+router.delete('/hapus-kelas/:id', async (req, res)=>{
+    const id_kelas = req.params.id;
 
     try {
         //cek apakah Id yang dimaksud ada.!
-        const existingTahunAjaran = await conn('tahun_ajaran')
-        .where('id_tahun_pelajaran', id_tahun_pelajaran)
+        const existingKelas = await conn('kelas')
+        .where('id_kelas', id_kelas)
         .first()
 
-        if (!existingTahunAjaran) {
+        if (!existingKelas) {
             return res.status(404).json({
                 Status: 404,
                 error: 'Tidak ada data'
             })            
         }
         // hapus tahun pelajaran berdasarkan id
-        await conn('tahun_ajaran')
-        .where('id_tahun_pelajaran', id_tahun_pelajaran)
+        await conn('kelas')
+        .where('id_kelas', id_kelas)
         .del();
 
         res.status(200).json({
