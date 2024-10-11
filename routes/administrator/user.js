@@ -116,7 +116,7 @@ router.get('/all-Admin',   (req, res) => {
  
 
 //operasi put/ update: merubah data yang sudah ada di database
-router.put('/Edit-admin/:id', async (req, res) => {
+router.put('/edit-admin/:id', async (req, res) => {
   const id_admin = req.params.id;
   const { nama_admin, alamat, jenis_kelamin, no_telp, email, username, foto, status } = req.body;
 

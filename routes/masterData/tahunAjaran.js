@@ -22,7 +22,7 @@ function generateRandomString(length) {
   }
 
   // Operasi Post: luntuk menambah data baru
-router.post('/new-tahun-pelajaran', async (req, res) =>{
+router.post('/add-tahun-pelajaran', async (req, res) =>{
     const { id_tahun_pelajaran, id_admin, tahun, aktif } =req.body
     const idAcak = generateRandomString(5);
 

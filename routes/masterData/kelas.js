@@ -22,7 +22,7 @@ function generateRandomString(length) {
   }
 
   // Operasi Post: luntuk menambah data baru
-router.post('/new-kelas', async (req, res) =>{
+router.post('/add-kelas', async (req, res) =>{
     const { id_kelas, id_admin, kelas } =req.body
     const idAcak = generateRandomString(5);
 
