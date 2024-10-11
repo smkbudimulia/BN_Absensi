@@ -137,7 +137,7 @@ router.put('/Edit-admin/:id', async (req, res) => {
     if (!existingAdmin) {
       return res.status(404).json({
         Status: 404,
-        error: 'Admin tidak ditemukan'
+        error: 'ok'
       });
     }
 
