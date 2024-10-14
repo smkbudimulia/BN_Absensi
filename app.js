@@ -10,6 +10,7 @@ const EPLoginDash = require('./routes/login')
 const EPSiswa = require('./routes/masterData/siswa')
 const EPTahunPelajaran = require('./routes/masterData/tahunAjaran')
 const EPKelas = require('./routes/masterData/kelas')
+const EPRombel = require('./routes/masterData/rombel')
 
 // Gunakan cors dengan konfigurasi untuk mengizinkan permintaan dari http://localhost:3000
 app.use(cookieParser());
@@ -30,6 +31,7 @@ app.use('/admin', EPAdmin)
 app.use('/siswa', EPSiswa)
 app.use('/tahun-pelajaran', EPTahunPelajaran)
 app.use('/kelas', EPKelas)
+app.use('/rombel', EPRombel)
 
 app.listen(port, ()=>{
     console.log(`brtjalan di port http://localhost:${port}`)
