@@ -69,9 +69,9 @@ router.post('/add-mapel', async (req, res) =>{
 })
 
 //operasi read: melihat semua data
-router.get('/all-kelas', (req, res)=>{
+router.get('/all-mapel', (req, res)=>{
     try {
-        conn('kelas')
+        conn('mapel')
         .select('*')
         .then((data)=>{
             res.status(200).json({
@@ -91,12 +91,12 @@ router.get('/all-kelas', (req, res)=>{
 })
 
 // Operasi Put/ Update: merubah data yang sudah ada pada database
-router.put('/edit-kelas/:id', async (req, res) =>{
-    const id_kelas = req.params.id;
-    const { kelas } = req.body;
+router.put('/edit-mapel/:id', async (req, res) =>{
+    const id_mapel = req.params.id;
+    const { nama_mapel } = req.body;
 
     //validasi inputan kosong
-    if (!kelas) {
+    if (!nama_mapel) {
         return res.status(400).json({
             Status: 400,
             error: 'Data tidak boleh kosong'
@@ -105,20 +105,20 @@ router.put('/edit-kelas/:id', async (req, res) =>{
 
     try {
         //cek apakah data dengan ID yg dimaksud ada
-        const existingKelas = await conn('kelas')
-        .where('id_kelas', id_kelas)
+        const existingMapel = await conn('mapel')
+        .where('id_mapel', id_mapel)
         .first()
 
-        if (!existingKelas) {
+        if (!existingMapel) {
             return res.status(404).json({
                 Status: 404,
                 error: 'Tidak ada data'
             })            
         }
 
-        const duplicateCheck = await conn('kelas')
+        const duplicateCheck = await conn('mapel')
         .where(function(){
-            this.where('kelas', kelas)
+            this.where('nama_mapel', nama_mapel)
             
         })
         .first()
@@ -126,23 +126,23 @@ router.put('/edit-kelas/:id', async (req, res) =>{
         if (duplicateCheck) {
             return res.status(400).json({
                 Status: 400,
-                error: 'Kelas sudah ada'
+                error: 'Mapel sudah ada'
             })
         }
 
         //update data
-        const updateKelas = {
-            kelas
+        const updateMapel = {
+            nama_mapel
         }
 
-        await conn('kelas')
-        .where('id_kelas', id_kelas)
-        .update(updateKelas)
+        await conn('mapel')
+        .where('id_mapel', id_mapel)
+        .update(updateMapel)
 
         res.status(200).json({
             Status: 200,
             message: 'Data berhasil diperbarui',
-            data: updateKelas
+            data: updateMapel
         })
     } catch (error) {
         console.error(error);
@@ -154,24 +154,24 @@ router.put('/edit-kelas/:id', async (req, res) =>{
 })
 
 //operasi delete: menghapus data by Id
-router.delete('/hapus-kelas/:id', async (req, res)=>{
-    const id_kelas = req.params.id;
+router.delete('/hapus-mapel/:id', async (req, res)=>{
+    const id_mapel = req.params.id;
 
     try {
         //cek apakah Id yang dimaksud ada.!
-        const existingKelas = await conn('kelas')
-        .where('id_kelas', id_kelas)
+        const existingMapel = await conn('mapel')
+        .where('id_mapel', id_mapel)
         .first()
 
-        if (!existingKelas) {
+        if (!existingMapel) {
             return res.status(404).json({
                 Status: 404,
                 error: 'Tidak ada data'
             })            
         }
         // hapus tahun pelajaran berdasarkan id
-        await conn('kelas')
-        .where('id_kelas', id_kelas)
+        await conn('mapel')
+        .where('id_mapel', id_mapel)
         .del();
 
         res.status(200).json({
