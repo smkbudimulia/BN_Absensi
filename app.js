@@ -13,6 +13,7 @@ const EPTahunPelajaran = require('./routes/masterData/tahunAjaran')
 const EPKelas = require('./routes/masterData/kelas')
 const EPRombel = require('./routes/masterData/rombel')
 const EPGuru = require('./routes/masterData/guru')
+const EPMapel = require('./routes/masterData/mapel')
 
 // Gunakan cors dengan konfigurasi untuk mengizinkan permintaan dari http://localhost:3000
 
@@ -39,6 +40,7 @@ app.use('/tahun-pelajaran', EPTahunPelajaran)
 app.use('/kelas', EPKelas)
 app.use('/rombel', EPRombel)
 app.use('/guru', EPGuru)
+app.use('/mapel', EPMapel)
 
 app.listen(port, ()=>{
     console.log(`brtjalan di port http://localhost:${port}`)

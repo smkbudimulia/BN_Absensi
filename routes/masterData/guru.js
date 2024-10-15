@@ -20,7 +20,7 @@ function generateRandomString(length) {
 
 // operasi post: menambah data akun atau administrasi baru
 router.post('/add-guru', async (req, res) => {
-    const { id_guru, id_admin, nip, nama_guru, jenis_kelamin, id_mapel, email, pass, foto, walas, brcode, id_kelas, rombel, no_telp} = req.body;
+    const { id_guru, id_admin, nip, nama_guru, jenis_kelamin, id_mapel, email, pass, foto, walas, barcode, id_kelas, rombel, no_telp} = req.body;
     const idAcak = generateRandomString(5);
     
     // Validasi input kosong
@@ -47,7 +47,7 @@ router.post('/add-guru', async (req, res) => {
   
         // Masukkan data baru
         const addData = {
-            id_guru:idAcak, id_admin, nip, nama_guru, jenis_kelamin, id_mapel, email, pass, foto, walas, brcode, id_kelas, rombel, no_telp
+            id_guru:idAcak, id_admin, nip, nama_guru, jenis_kelamin, id_mapel, email, pass, foto, walas, barcode, id_kelas, rombel, no_telp
         };
   
         await conn('guru').insert(addData);
@@ -90,7 +90,7 @@ router.get('/all-guru',  (req, res) => {
      router.put('/edit-guru/:id/:nip', async (req, res) => {
         const id_guru = req.params.id;
         const nip = req.params.nip;
-        const {  nama_guru, jenis_kelamin, id_mapel, email, pass, foto, walas, brcode, id_kelas, rombel, no_telp } = req.body;
+        const {  nama_guru, jenis_kelamin, id_mapel, email, pass, foto, walas, barcode, id_kelas, rombel, no_telp } = req.body;
     
         // Validasi inputan kosong
         // if (!nip || !nama_guru || !jenis_kelamin || !email || !rombel || !no_telp) {
@@ -129,7 +129,7 @@ router.get('/all-guru',  (req, res) => {
     
             // Update data
             const updateGuru = {
-                nama_guru, jenis_kelamin, id_mapel, email, pass, foto, walas, brcode, id_kelas, rombel, no_telp
+                nama_guru, jenis_kelamin, id_mapel, email, pass, foto, walas, barcode, id_kelas, rombel, no_telp
             };
     
             await conn('guru')
