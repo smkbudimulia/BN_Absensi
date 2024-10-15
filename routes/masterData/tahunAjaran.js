@@ -98,12 +98,12 @@ router.put('/edit-tahun-pelajaran/:id', async (req, res) =>{
     const {  id_admin, tahun, aktif } = req.body
 
     //validasi inputan kosong
-    if (!tahun || !aktif) {
-        return res.status(400).json({
-            Status: 400,
-            error: 'Data tidak boleh kosong'
-        })
-    }
+    // if (!tahun || !aktif) {
+    //     return res.status(400).json({
+    //         Status: 400,
+    //         error: 'Data tidak boleh kosong'
+    //     })
+    // }
 
     try {
         //cek apakah data dengan ID yg dimaksud ada

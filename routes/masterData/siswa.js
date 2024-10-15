@@ -5,7 +5,7 @@ const conn = require('../../Database/ConfigDB')// koneksi ke database
 const verifyToken = require('../../middleware/jwToken')
 
 // operasi post: menambah data akun atau administrasi baru
-router.post('/add-Siswa', async (req, res) => {
+router.post('/add-siswa', async (req, res) => {
     const { id_siswa, id_admin, nis, nama_siswa, jenis_kelamin, id_tahun_pelajaran, id_kelas, id_rombel, email, pass, foto, barcode, nama_wali, nomor_wali} = req.body;
     // const idAcak = generateRandomString(5);
     

@@ -1,6 +1,7 @@
 const express = require('express')
 const cors = require('cors'); // Import cors
 const app = express()
+// const verifyToken = require('../../middleware/jwToken')
 const cookieParser = require('cookie-parser')
 const port = 3005
 
@@ -11,8 +12,10 @@ const EPSiswa = require('./routes/masterData/siswa')
 const EPTahunPelajaran = require('./routes/masterData/tahunAjaran')
 const EPKelas = require('./routes/masterData/kelas')
 const EPRombel = require('./routes/masterData/rombel')
+const EPGuru = require('./routes/masterData/guru')
 
 // Gunakan cors dengan konfigurasi untuk mengizinkan permintaan dari http://localhost:3000
+
 app.use(cookieParser());
 app.use(cors({
     origin: 'http://localhost:3000'
@@ -25,13 +28,17 @@ app.get('/', (req, res)=>{
     res.send('Express The word')
 })
 
-//End point / Url API
+// End point / Url API
+// Login
 app.use('/api', EPLoginDash)
+// Administrator
 app.use('/admin', EPAdmin)
+// Master Data
 app.use('/siswa', EPSiswa)
 app.use('/tahun-pelajaran', EPTahunPelajaran)
 app.use('/kelas', EPKelas)
 app.use('/rombel', EPRombel)
+app.use('/guru', EPGuru)
 
 app.listen(port, ()=>{
     console.log(`brtjalan di port http://localhost:${port}`)
