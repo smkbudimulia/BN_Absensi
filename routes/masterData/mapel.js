@@ -23,11 +23,11 @@ function generateRandomString(length) {
 
   // Operasi Post: luntuk menambah data baru
 router.post('/add-mapel', async (req, res) =>{
-    const { id_mapel, id_admin, kelas } =req.body
+    const { id_mapel, id_admin, nama_mapel } =req.body
     const idAcak = generateRandomString(5);
 
     //validai input data
-    if (!kelas) {
+    if ( !nama_mapel ) {
         return res.status(400).json({
             Status: 400,
             error: 'Data tidak boleh kosong' 
@@ -36,23 +36,21 @@ router.post('/add-mapel', async (req, res) =>{
 
     try {
         // cek duplikasi data
-        const existingKelas = await conn('kelas')
-        .where('id_kelas', id_kelas)
-        .orWhere('kelas', kelas)
+        const existingMapel = await conn('mapel')
+        .where('id_mapel', id_mapel)
+        .orWhere('nama_mapel', nama_mapel)
         .first()
 
-        if (existingKelas) {
+        if (existingMapel) {
             return res.status(400).json({ 
                 Status: 400,
                 error: 'data sudah ada' 
               });
         }
         const addData = {
-            id_kelas: idAcak, 
-            id_admin, 
-            kelas
+            id_mapel: idAcak, id_admin, nama_mapel
             }
-        await conn('kelas').insert(addData)
+        await conn('mapel').insert(addData)
 
         res.status(201).json({
             Status: 201,

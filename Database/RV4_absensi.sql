@@ -21,8 +21,6 @@ CREATE TABLE `mapel`(
     `id_mapel` VARCHAR(255) NOT NULL,
     `id_admin` VARCHAR(255) NOT NULL,
     `nama_mapel` VARCHAR(255) NOT NULL,
-    `id_kelas` VARCHAR(255) NOT NULL,
-    `rombel` VARCHAR(255) NOT NULL,
     PRIMARY KEY(`id_mapel`)
 );
 CREATE TABLE `guru`(
