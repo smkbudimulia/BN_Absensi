@@ -22,53 +22,67 @@ function generateRandomString(length) {
   }
 
   // Operasi Post: luntuk menambah data baru
-router.post('/add-rombel', async (req, res) =>{
-    const { id_rombel, id_admin, nama_rombel } =req.body
-    const idAcak = generateRandomString(5);
+  router.post('/add-rombel', async (req, res) => {
+    const rombelDataArray = req.body;
 
-    //validai input data
-    if (!nama_rombel) {
+    // Periksa apakah input adalah array
+    if (!Array.isArray(rombelDataArray) || rombelDataArray.length === 0) {
         return res.status(400).json({
             Status: 400,
-            error: 'Data tidak boleh kosong' 
-        })        
+            error: 'Data tidak valid atau kosong',
+        });
     }
 
     try {
-        // cek duplikasi data
-        const existingKelas = await conn('rombel_belajar')
-        .where('id_rombel', id_rombel)
-        .orWhere('nama_rombel', nama_rombel)
-        .first()
+        // Iterasi melalui setiap data dalam array
+        for (const rombelData of rombelDataArray) {
+            const { id_admin, nama_rombel } = rombelData;
+            const idAcak = generateRandomString(5);
 
-        if (existingKelas) {
-            return res.status(400).json({ 
-                Status: 400,
-                error: 'data sudah ada' 
-              });
-        }
-        const addData = {
-            id_rombel: idAcak, 
-            id_admin, 
-            nama_rombel
+            // Validasi input data
+            if (!nama_rombel) {
+                return res.status(400).json({
+                    Status: 400,
+                    error: 'Data tidak boleh kosong',
+                });
             }
-        await conn('rombel_belajar').insert(addData)
+
+            // Cek duplikasi data
+            const existingKelas = await conn('rombel_belajar')
+                .where('id_rombel', idAcak) // id_rombel sekarang menggunakan idAcak
+                .orWhere('nama_rombel', nama_rombel)
+                .first();
+
+            if (existingKelas) {
+                console.log(`Data dengan nama_rombel ${nama_rombel} sudah ada, melewati proses penyimpanan.`);
+                continue; // Jika data sudah ada, lewati iterasi ini dan lanjutkan ke berikutnya
+            }
+
+            const addData = {
+                id_rombel: idAcak,
+                id_admin,
+                nama_rombel,
+            };
+            
+            await conn('rombel_belajar').insert(addData);
+        }
 
         res.status(201).json({
             Status: 201,
             success: true,
-            message: 'OK',
-            data: addData
-        })
+            message: 'Data berhasil ditambahkan',
+        });
 
     } catch (error) {
         console.log(error);
-        res.status(500).json({ 
-          Status: 500,
-          error: 'Internal Server Error' 
-        });        
+        res.status(500).json({
+            Status: 500,
+            error: 'Internal Server Error',
+        });
     }
-})
+});
+
+  
 
 //operasi read: melihat semua data
 router.get('/all-rombel', (req, res)=>{
