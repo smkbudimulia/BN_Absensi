@@ -37,8 +37,8 @@ router.post('/add-mapel', async (req, res) =>{
     try {
         // cek duplikasi data
         const existingMapel = await conn('mapel')
-        .where('id_mapel', id_mapel)
-        .orWhere('nama_mapel', nama_mapel)
+        // .where('id_mapel', id_mapel)
+        .where('nama_mapel', nama_mapel)
         .first()
 
         if (existingMapel) {
