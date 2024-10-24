@@ -3,6 +3,25 @@ const router = express.Router();
 const conn = require('../../Database/ConfigDB')// koneksi ke database
 // const bcrypt = require('bcrypt')
 const verifyToken = require('../../middleware/jwToken')
+const multer = require('multer')
+const path = require('path')
+
+
+// Konfigurasi penyimpanan Multer
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/'); // Folder tempat foto disimpan
+  },
+  filename: (req, file, cb) => {
+    const uniqueName = Date.now() + path.extname(file.originalname); // Nama unik untuk setiap file
+    cb(null, uniqueName);
+  },
+});
+
+// Inisialisasi Multer
+const upload = multer({ storage });
+
+
 function generateRandomString(length) {
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     let randomString = '';
@@ -16,14 +35,16 @@ function generateRandomString(length) {
 }
 
 // operasi post: menambah data akun atau administrasi baru
-router.post('/add-siswa', async (req, res) => {
-    const siswaDataArray = req.body;
+router.post('/add-siswa', upload.single('foto'), async (req, res) => {
+    const siswaDataArray = JSON.parse(req.body.siswaData)
+   
 
     // Jika data berbentuk array
     if (Array.isArray(siswaDataArray) && siswaDataArray.length > 0) {
         try {
             for (const siswaData of siswaDataArray) {
-                const { id_siswa, id_admin, nis, nama_siswa, jenis_kelamin, id_tahun_pelajaran, id_kelas, id_rombel, email, pass, foto, barcode, nama_wali, nomor_wali } = siswaData;
+                const { id_siswa, id_admin, nis, nama_siswa, jenis_kelamin, id_tahun_pelajaran, id_kelas, id_rombel, email, pass,  barcode, nama_wali, nomor_wali } = siswaData;
+                const foto = req.file ? req.file.filename : null;
 
                 // // Validasi input data
                 // if (!nis || !nama_siswa || !jenis_kelamin || !id_tahun_pelajaran || !id_kelas || !id_rombel || !nama_wali || !nomor_wali) {
@@ -82,8 +103,8 @@ router.post('/add-siswa', async (req, res) => {
 
     } else {
         // Jika input bukan array (data tunggal)
-        const { id_siswa, id_admin, nis, nama_siswa, jenis_kelamin, id_tahun_pelajaran, id_kelas, id_rombel, email, pass, foto, barcode, nama_wali, nomor_wali } = req.body;
-
+        const { id_siswa, id_admin, nis, nama_siswa, jenis_kelamin, id_tahun_pelajaran, id_kelas, id_rombel, email, pass, barcode, nama_wali, nomor_wali } = req.body;
+        const foto = req.file ? req.file.filename : null;
         // // Validasi input data
         // if (!nis || !nama_siswa || !jenis_kelamin || !id_tahun_pelajaran || !id_kelas || !id_rombel || !nama_wali || !nomor_wali) {
         //     return res.status(400).json({

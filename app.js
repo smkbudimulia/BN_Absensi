@@ -3,8 +3,8 @@ const cors = require('cors'); // Import cors
 const app = express()
 // const verifyToken = require('../../middleware/jwToken')
 const cookieParser = require('cookie-parser')
-const port = 3005
-
+require('dotenv').config(); // Memuat variabel dari .env
+const PORT = process.env.PORT || 5000;
 //rute data
 const EPAdmin = require('./routes/administrator/user')
 const EPLoginDash = require('./routes/login')
@@ -42,6 +42,6 @@ app.use('/rombel', EPRombel)
 app.use('/guru', EPGuru)
 app.use('/mapel', EPMapel)
 
-app.listen(port, ()=>{
-    console.log(`brtjalan di port http://localhost:${port}`)
+app.listen(PORT, ()=>{
+    console.log(`brtjalan di PORT http://localhost:${PORT}`)
 })
