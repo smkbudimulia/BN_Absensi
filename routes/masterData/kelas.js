@@ -37,8 +37,8 @@ router.post('/add-kelas', async (req, res) =>{
     try {
         // cek duplikasi data
         const existingKelas = await conn('kelas')
-        .where('id_kelas', id_kelas)
-        .orWhere('kelas', kelas)
+        // .where('id_kelas', id_kelas)
+        .where('kelas', kelas)
         .first()
 
         if (existingKelas) {
