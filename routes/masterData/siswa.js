@@ -116,16 +116,14 @@ router.post('/add-siswa', upload.single('foto'), async (req, res) => {
         try {
             // Cek duplikasi data siswa berdasarkan id_siswa atau nis
             const existingSiswa = await conn('siswa')
-                .where('id_siswa', id_siswa)
-                .orWhere('nis', nis)
-                .first();
+                    .where('id_siswa', id_siswa)
+                    .orWhere('nis', nis)
+                    .first();
 
-            if (existingSiswa) {
-                return res.status(400).json({
-                    Status: 400,
-                    error: 'Data siswa sudah ada',
-                });
-            }
+                if (existingSiswa) {
+                    console.log(`Data dengan ID ${id_siswa} atau NIS ${nis} sudah ada, melewati proses penyimpanan.`);
+                     // Lewati jika sudah ada
+                }
 
             // Tambahkan data siswa baru
             const idAcak = generateRandomString(5); // ID acak untuk data tunggal

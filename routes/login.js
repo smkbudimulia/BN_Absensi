@@ -72,6 +72,7 @@ router.post('/login', async (req, res) => {
                 nama_admin: admin.nama_admin,
                 username: admin.username,
                 email: admin.email,
+                status: admin.status
                 // Tambahkan data lain yang ingin dikirim ke frontend
             }
         });

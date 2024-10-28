@@ -4,7 +4,7 @@ const app = express()
 // const verifyToken = require('../../middleware/jwToken')
 const cookieParser = require('cookie-parser')
 require('dotenv').config(); // Memuat variabel dari .env
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT;
 //rute data
 const EPAdmin = require('./routes/administrator/user')
 const EPLoginDash = require('./routes/login')
