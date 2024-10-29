@@ -14,9 +14,15 @@ const EPKelas = require('./routes/masterData/kelas')
 const EPRombel = require('./routes/masterData/rombel')
 const EPGuru = require('./routes/masterData/guru')
 const EPMapel = require('./routes/masterData/mapel')
+const tes = require('./routes/masterData/tes')
+const path = require('path');
+
+
+// Pastikan path ini sesuai dengan lokasi sebenarnya dari folder `uploads`
+app.use('/img', express.static(path.join(__dirname, 'uploads/siswa/')));
+
 
 // Gunakan cors dengan konfigurasi untuk mengizinkan permintaan dari http://localhost:3000
-
 app.use(cookieParser());
 app.use(cors({
     origin: 'http://localhost:3000'
@@ -41,6 +47,7 @@ app.use('/kelas', EPKelas)
 app.use('/rombel', EPRombel)
 app.use('/guru', EPGuru)
 app.use('/mapel', EPMapel)
+app.use('/tes', tes)
 
 app.listen(PORT, ()=>{
     console.log(`brtjalan di PORT http://localhost:${PORT}`)

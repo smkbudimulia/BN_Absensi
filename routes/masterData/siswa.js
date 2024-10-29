@@ -19,7 +19,7 @@ const storage = multer.diskStorage({
 });
 
 // Inisialisasi Multer
-const upload = multer({ storage });
+const upload = multer({ storage }).single('foto');
 
 
 function generateRandomString(length) {
@@ -35,16 +35,33 @@ function generateRandomString(length) {
 }
 
 // operasi post: menambah data akun atau administrasi baru
-router.post('/add-siswa', upload.single('foto'), async (req, res) => {
-    const siswaDataArray = JSON.parse(req.body.siswaData)
-   
+router.post('/add-siswa', async (req, res) => {
+    // const siswaDataArray = JSON.parse(req.body.siswaData)
+   // Pastikan `req.body.siswaData` terdefinisi sebelum memparsing
+  if (!req.body.siswaData) {
+    return res.status(400).json({
+      Status: 400,
+      error: 'Data siswa tidak ditemukan',
+    });
+  }
+
+  let siswaDataArray;
+  // Coba parsing `siswaData` jika terdefinisi
+  try {
+    siswaDataArray = JSON.parse(req.body.siswaData);
+  } catch (error) {
+    return res.status(400).json({
+      Status: 400,
+      error: 'Data siswa tidak valid atau bukan JSON',
+    });
+  }
 
     // Jika data berbentuk array
     if (Array.isArray(siswaDataArray) && siswaDataArray.length > 0) {
         try {
             for (const siswaData of siswaDataArray) {
                 const { id_siswa, id_admin, nis, nama_siswa, jenis_kelamin, id_tahun_pelajaran, id_kelas, id_rombel, email, pass,  barcode, nama_wali, nomor_wali } = siswaData;
-                const foto = req.file ? req.file.filename : null;
+                
 
                 // // Validasi input data
                 // if (!nis || !nama_siswa || !jenis_kelamin || !id_tahun_pelajaran || !id_kelas || !id_rombel || !nama_wali || !nomor_wali) {
@@ -65,26 +82,37 @@ router.post('/add-siswa', upload.single('foto'), async (req, res) => {
                     continue; // Lewati jika sudah ada
                 }
 
-                // Tambahkan data siswa baru
-                const idAcak = generateRandomString(5); // ID acak
-                const addData = {
-                    id_siswa: idAcak,
-                    id_admin,
-                    nis,
-                    nama_siswa,
-                    jenis_kelamin,
-                    id_tahun_pelajaran,
-                    id_kelas,
-                    id_rombel,
-                    email,
-                    pass,
-                    foto,
-                    barcode,
-                    nama_wali,
-                    nomor_wali,
-                };
+                upload(req, res, async function (err) {
+                    if (err) {
+                      return res.status(500).json({
+                        Status: 500,
+                        error: 'Error uploading file',
+                      });
+                    }
+          
+                    const foto = req.file ? req.file.filename : null;
+                    const idAcak = generateRandomString(5); // ID acak
+                    const addData = {
+                      id_siswa: idAcak,
+                      id_admin,
+                      nis,
+                      nama_siswa,
+                      jenis_kelamin,
+                      id_tahun_pelajaran,
+                      id_kelas,
+                      id_rombel,
+                      email,
+                      pass,
+                      foto,
+                      barcode,
+                      nama_wali,
+                      nomor_wali,
+                    };
+          
+                    await conn('siswa').insert(addData);
+                  });
 
-                await conn('siswa').insert(addData);
+               
             }
 
             res.status(201).json({
@@ -104,7 +132,7 @@ router.post('/add-siswa', upload.single('foto'), async (req, res) => {
     } else {
         // Jika input bukan array (data tunggal)
         const { id_siswa, id_admin, nis, nama_siswa, jenis_kelamin, id_tahun_pelajaran, id_kelas, id_rombel, email, pass, barcode, nama_wali, nomor_wali } = req.body;
-        const foto = req.file ? req.file.filename : null;
+        // const foto = req.file ? req.file.filename : null;
         // // Validasi input data
         // if (!nis || !nama_siswa || !jenis_kelamin || !id_tahun_pelajaran || !id_kelas || !id_rombel || !nama_wali || !nomor_wali) {
         //     return res.status(400).json({
@@ -124,36 +152,45 @@ router.post('/add-siswa', upload.single('foto'), async (req, res) => {
                     console.log(`Data dengan ID ${id_siswa} atau NIS ${nis} sudah ada, melewati proses penyimpanan.`);
                      // Lewati jika sudah ada
                 }
-
-            // Tambahkan data siswa baru
-            const idAcak = generateRandomString(5); // ID acak untuk data tunggal
+                 // Mulai upload file jika tidak ada data duplikat
+        upload(req, res, async function (err) {
+            if (err) {
+              return res.status(500).json({
+                Status: 500,
+                error: 'Error uploading file',
+              });
+            }
+    
+            const foto = req.file ? req.file.filename : null;
+            const idAcak = generateRandomString(5); // ID acak
             const addData = {
-                id_siswa: idAcak,
-                id_admin,
-                nis,
-                nama_siswa,
-                jenis_kelamin,
-                id_tahun_pelajaran,
-                id_kelas,
-                id_rombel,
-                email,
-                pass,
-                foto,
-                barcode,
-                nama_wali,
-                nomor_wali,
+              id_siswa: idAcak,
+              id_admin,
+              nis,
+              nama_siswa,
+              jenis_kelamin,
+              id_tahun_pelajaran,
+              id_kelas,
+              id_rombel,
+              email,
+              pass,
+              foto,
+              barcode,
+              nama_wali,
+              nomor_wali,
             };
-
+    
             await conn('siswa').insert(addData);
-
+    
             res.status(201).json({
-                Status: 201,
-                success: true,
-                message: 'Data siswa berhasil ditambahkan',
-                data: addData
+              Status: 201,
+              success: true,
+              message: 'Data siswa berhasil ditambahkan',
+              data: addData,
             });
+          });
 
-        } catch (error) {
+         } catch (error) {
             console.log(error);
             res.status(500).json({
                 Status: 500,
