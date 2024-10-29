@@ -6,6 +6,7 @@ const verifyToken = require('../../middleware/jwToken')
 const multer = require('multer')
 const path = require('path')
 
+const BASE_URL = process.env.BASE_URL_IMAGE; 
 
 // Konfigurasi penyimpanan Multer
 const storage = multer.diskStorage({
