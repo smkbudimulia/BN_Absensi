@@ -56,7 +56,7 @@ app.use('/mapel', EPMapel)
 app.use('/tes', tes)
 
 // Non Master data
-app.use('/joinTotalKelasSiswa', EPTotKelasSiswa)
+app.use('/joinNonMaster', EPTotKelasSiswa)
 
 app.listen(PORT, ()=>{
     console.log(`brtjalan di PORT http://localhost:${PORT}`)
