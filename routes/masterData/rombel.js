@@ -124,8 +124,6 @@ router.post('/add-rombel', async (req, res) => {
         }
     }
 });
-
-
   
 
 //operasi read: melihat semua data

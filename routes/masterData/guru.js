@@ -20,52 +20,111 @@ function generateRandomString(length) {
 
 // operasi post: menambah data akun atau administrasi baru
 router.post('/add-guru', async (req, res) => {
-    const { id_guru, id_admin, nip, nama_guru, jenis_kelamin, id_mapel, email, pass, foto, walas, barcode, id_kelas, rombel, no_telp} = req.body;
-    const idAcak = generateRandomString(5);
-    
-    // Validasi input kosong
-    if ( !nip || !nama_guru || !jenis_kelamin || !email || !rombel || !no_telp) {
-        return res.status(400).json({
-            Status: 400,
-            error: 'Data tidak boleh kosong'
-          });
-        }
-  
-    try {
-        // Cek duplikasi id_siswa
-        const existingGuru = await conn('guru')
-            .where('id_guru', id_guru)
-            .orWhere('nip', nip)
-            .first();
-  
-        if (existingGuru) {
-            return res.status(404).json({
-                Status: 404,
-                error: 'data sudah ada'
-              });
+    const rombelDataArray = req.body;
+
+    // Periksa apakah input adalah array
+    if (Array.isArray(rombelDataArray) && rombelDataArray.length > 0) {
+        try {
+            // Iterasi melalui setiap data dalam array
+            for (const rombelData of rombelDataArray) {
+                const {  id_admin, nip, nama_guru, jenis_kelamin,no_telp } = rombelData;
+
+                // Validasi input data
+                if (!nip || !nama_guru || !jenis_kelamin || !no_telp ) {
+                    return res.status(400).json({
+                        Status: 400,
+                        error: 'Data tidak boleh kosong',
+                    });
+                }
+
+                // Cek duplikasi data
+                const existingGuru = await conn('guru')
+                    .where('nip', nip)
+                    .first();
+
+                if (existingGuru) {
+                    console.log("Data Sudah Ada");
+                    continue; // Jika data sudah ada, lewati iterasi ini dan lanjutkan ke berikutnya
+                }
+
+                const idAcak = generateRandomString(5); // ID acak per iterasi
+                const addData = {
+                    id_guru:idAcak, 
+                    id_admin, 
+                    nip, 
+                    nama_guru, 
+                    jenis_kelamin,
+                    no_telp,
+                };
+
+                await conn('guru').insert(addData);
             }
-  
-        // Masukkan data baru
-        const addData = {
-            id_guru:idAcak, id_admin, nip, nama_guru, jenis_kelamin, id_mapel, email, pass, foto, walas, barcode, id_kelas, rombel, no_telp
-        };
-  
-        await conn('guru').insert(addData);
-  
-        res.status(201).json({
-            Status: 201,
-            success: true,
-            message: 'OK',
-            data: addData
-        })
-    } catch (error) {
-        console.log(error);
-        res.status(500).json({ 
-          Status: 500,
-          error: 'Internal Server Error' 
-        });   
+
+            res.status(201).json({
+                Status: 201,
+                success: true,
+                message: 'Data berhasil ditambahkan',
+            });
+
+        } catch (error) {
+            console.log(error);
+            res.status(500).json({
+                Status: 500,
+                error: 'Internal Server Error',
+            });
+        }
+
+    } else {
+        // Jika input bukan array (data tunggal)
+        const {  id_admin, nip, nama_guru, jenis_kelamin,no_telp } = req.body;
+
+        // Validasi input data
+        if (!nip || !nama_guru || !jenis_kelamin || !no_telp) {
+            return res.status(400).json({
+                Status: 400,
+                error: 'Data tidak boleh kosong',
+            });
+        }
+
+        try {
+            // Cek duplikasi data
+            const existingGuru = await conn('guru')
+                    .where('nip', nip)
+                    .first();
+
+                if (existingGuru) {
+                    console.log("Data Sudah Ada");
+                   
+                }
+
+            const idAcak = generateRandomString(5); // ID acak untuk data tunggal
+            const addData = {
+                id_guru:idAcak, 
+                    id_admin, 
+                    nip, 
+                    nama_guru, 
+                    jenis_kelamin,
+                    no_telp
+            };
+
+            await conn('guru').insert(addData);
+
+            res.status(201).json({
+                Status: 201,
+                success: true,
+                message: 'Data berhasil ditambahkan',
+                data: addData
+            });
+
+        } catch (error) {
+            console.log(error);
+            res.status(500).json({
+                Status: 500,
+                error: 'Internal Server Error',
+            });
+        }
     }
-  });
+});
 
   //operasi read: melihat semua akun
 router.get('/all-guru',  (req, res) => {
@@ -90,7 +149,7 @@ router.get('/all-guru',  (req, res) => {
      router.put('/edit-guru/:id/:nip', async (req, res) => {
         const id_guru = req.params.id;
         const nip = req.params.nip;
-        const {  nama_guru, jenis_kelamin, id_mapel, email, pass, foto, walas, barcode, id_kelas, rombel, no_telp } = req.body;
+        const {   nama_guru, jenis_kelamin,no_telp } = req.body;
     
         // Validasi inputan kosong
         // if (!nip || !nama_guru || !jenis_kelamin || !email || !rombel || !no_telp) {
@@ -103,9 +162,8 @@ router.get('/all-guru',  (req, res) => {
         try {
             // Cek apakah data dengan ID dan NIS yang dimaksud ada
             const existingGuru = await conn('guru')
-                .where('id_guru', id_guru)
-                .andWhere('nip', nip)
-                .first();
+            .where('nip', nip)
+            .first();
     
             if (!existingGuru) {
                 return res.status(404).json({
@@ -129,7 +187,12 @@ router.get('/all-guru',  (req, res) => {
     
             // Update data
             const updateGuru = {
-                nama_guru, jenis_kelamin, id_mapel, email, pass, foto, walas, barcode, id_kelas, rombel, no_telp
+                id_guru:idAcak, 
+                id_admin, 
+                nip, 
+                nama_guru, 
+                jenis_kelamin,
+                no_telp,
             };
     
             await conn('guru')
