@@ -187,8 +187,8 @@ router.get('/all-guru',  (req, res) => {
     
             // Update data
             const updateGuru = {
-                id_guru:idAcak, 
-                id_admin, 
+                // id_guru:idAcak, 
+                // id_admin, 
                 nip, 
                 nama_guru, 
                 jenis_kelamin,

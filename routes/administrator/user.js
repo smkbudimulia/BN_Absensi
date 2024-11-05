@@ -157,6 +157,9 @@ router.put('/edit-admin/:id', async (req, res) => {
       });
     }
 
+     //Hash pass sebelum disimpan(enkripsi)
+     const hashPass = await bcrypt.hash(pass, 11)
+
     // Update data admin
     const update_admin = {
       nama_admin,
@@ -165,6 +168,7 @@ router.put('/edit-admin/:id', async (req, res) => {
       no_telp,
       email,
       username,
+      pass:hashPass,
       foto,
       status
     };

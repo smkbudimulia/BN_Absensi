@@ -37,8 +37,8 @@ router.post('/add-tahun-pelajaran', async (req, res) =>{
     try {
         // cek duplikasi data
         const existingTahunAjaran = await conn('tahun_ajaran')
-        .where('id_tahun_pelajaran', id_tahun_pelajaran)
-        .orWhere('tahun', tahun)
+        // .where('id_tahun_pelajaran', id_tahun_pelajaran)
+        .where('tahun', tahun)
         .first()
 
         if (existingTahunAjaran) {

@@ -5,6 +5,9 @@ const app = express()
 const cookieParser = require('cookie-parser')
 require('dotenv').config(); // Memuat variabel dari .env
 const PORT = process.env.PORT;
+
+const tes = require('./routes/masterData/tes')
+const path = require('path');
 //rute data
 const EPAdmin = require('./routes/administrator/user')
 const EPLoginDash = require('./routes/login')
@@ -14,8 +17,11 @@ const EPKelas = require('./routes/masterData/kelas')
 const EPRombel = require('./routes/masterData/rombel')
 const EPGuru = require('./routes/masterData/guru')
 const EPMapel = require('./routes/masterData/mapel')
-const tes = require('./routes/masterData/tes')
-const path = require('path');
+
+//Data Join
+const EPTotKelasSiswa = require('./routes/NonMasterData/joinData')
+
+
 
 
 // Pastikan path ini sesuai dengan lokasi sebenarnya dari folder `uploads`
@@ -48,6 +54,9 @@ app.use('/rombel', EPRombel)
 app.use('/guru', EPGuru)
 app.use('/mapel', EPMapel)
 app.use('/tes', tes)
+
+// Non Master data
+app.use('/joinTotalKelasSiswa', EPTotKelasSiswa)
 
 app.listen(PORT, ()=>{
     console.log(`brtjalan di PORT http://localhost:${PORT}`)

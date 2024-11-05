@@ -46,7 +46,7 @@ router.post('/add-siswa', async (req, res) => {
                   .first();
 
               if (existingSiswa) {
-                  console.log(`Data Sudah Ada.`);
+                  console.log(`Data dengan NIS ${nis} sudah ada, melewati proses penyimpanan.`);
                   continue; // Jika data sudah ada, lewati iterasi ini dan lanjutkan ke berikutnya
               }
 
