@@ -164,10 +164,10 @@ router.get('/all-Siswa',  (req, res) => {
      router.put('/edit-siswa/:id/:nis', async (req, res) => {
         const id_siswa = req.params.id;
         const nis = req.params.nis;
-        const { nama_siswa, jenis_kelamin, id_tahun_pelajaran, id_kelas, id_rombel, email, pass, foto, barcode, nama_wali, nomor_wali } = req.body;
+        const { id_admin, nama_siswa,jenis_kelamin, id_tahun_pelajaran,id_kelas,id_rombel,nama_wali,nomor_wali } = req.body;
     
         // Validasi inputan kosong
-        if (!nama_siswa || !jenis_kelamin || !id_tahun_pelajaran || !id_kelas || !id_rombel || !nama_wali || !nomor_wali) {
+        if (!id_siswa || !nis || !nama_siswa || !jenis_kelamin ||!nama_wali || !nomor_wali) {
             return res.status(400).json({
                 Status: 400,
                 error: 'Data tidak boleh kosong'
@@ -203,17 +203,16 @@ router.get('/all-Siswa',  (req, res) => {
     
             // Update data
             const updateSiswa = {
-                nama_siswa, 
-                jenis_kelamin, 
-                id_tahun_pelajaran, 
-                id_kelas, 
-                id_rombel, 
-                email, 
-                pass, 
-                foto, 
-                barcode, 
-                nama_wali, 
-                nomor_wali
+              id_siswa, 
+              id_admin,
+              nis,
+              nama_siswa,
+              jenis_kelamin, 
+              id_tahun_pelajaran,
+              id_kelas,
+              id_rombel,
+              nama_wali,
+              nomor_wali
             };
     
             await conn('siswa')
