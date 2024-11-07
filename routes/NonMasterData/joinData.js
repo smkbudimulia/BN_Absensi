@@ -8,24 +8,29 @@ const verifyToken = require('../../middleware/jwToken')
 router.get('/KelasSiswaTotal', async (req, res) => {
     try {
         const data = await conn('siswa')
-            .select('id_kelas', 'id_rombel')
-            .count('* as total')
-            .groupBy('id_kelas', 'id_rombel');
+            .select(
+                'siswa.id_kelas',
+                'siswa.id_rombel',
+                'kelas.kelas', // Nama kelas dari tabel kelas
+                'rombel_belajar.nama_rombel' // Nama rombel dari tabel rombel_belajar
+            )
+            .count('* as total_siswa')
+            .leftJoin('kelas', 'siswa.id_kelas', 'kelas.id_kelas')
+            .leftJoin('rombel_belajar', 'siswa.id_rombel', 'rombel_belajar.id_rombel')
+            .groupBy('siswa.id_kelas', 'siswa.id_rombel', 'kelas.kelas', 'rombel_belajar.nama_rombel');
 
-            const result = data.map(item => ({
-                ...item,
-                kelas: `${item.id_kelas} ${item.id_rombel}` // Menggabungkan id_kelas dan id_rombel
-            }));
+        const result = data.map(item => ({
+            ...item,
+            kelas: `${item.kelas} ${item.nama_rombel}` // Menggabungkan nama kelas dan nama rombel
+        }));
 
         if (data && data.length > 0) {
-            // Jika ada data, kirimkan respons dengan hasil
             res.status(200).json({
                 Status: 200,
                 message: "ok",
                 data: result
             });
         } else {
-            // Jika tabel kosong atau query tidak mengembalikan data
             res.status(200).json({
                 Status: 200,
                 message: "No data found",
@@ -33,35 +38,52 @@ router.get('/KelasSiswaTotal', async (req, res) => {
             });
         }
     } catch (error) {
-        console.error("Database query failed:", error.message); // Berikan lebih banyak konteks pada log error
+        console.error("Database query failed:", error.message);
         res.status(500).json({
             Status: 500,
             error: 'Internal Server Error'
         });
     }
 });
+
 
 router.get('/namaSiswaKelas', async (req, res) => {
     try {
         const data = await conn('siswa')
-            .select('nis','id_kelas', 'id_rombel', 'nama_siswa','nomor_wali')
-            // .count('* as total')
-            .groupBy('nis','id_kelas', 'id_rombel','nama_siswa','nomor_wali')
-            
-            const result = data.map(item => ({
-                ...item,
-                kelas: `${item.id_kelas} ${item.id_rombel}` // Menggabungkan id_kelas dan id_rombel
-            }));
+            .select(
+                'siswa.id_siswa',
+                'siswa.nis',
+                'siswa.id_kelas',
+                'siswa.id_rombel',
+                'siswa.nama_siswa',
+                'siswa.nomor_wali',
+                'kelas.kelas', // Nama kelas dari tabel kelas
+                'rombel_belajar.nama_rombel' // Nama rombel dari tabel rombel_belajar
+            )
+            .leftJoin('kelas', 'siswa.id_kelas', 'kelas.id_kelas')
+            .leftJoin('rombel_belajar', 'siswa.id_rombel', 'rombel_belajar.id_rombel')
+            .groupBy(
+                'siswa.nis',
+                'siswa.id_kelas',
+                'siswa.id_rombel',
+                'siswa.nama_siswa',
+                'siswa.nomor_wali',
+                'kelas.kelas',
+                'rombel_belajar.nama_rombel'
+            );
+
+        const result = data.map(item => ({
+            ...item,
+            kelas: `${item.kelas} ${item.nama_rombel}` // Menggabungkan nama kelas dan nama rombel
+        }));
 
         if (data && data.length > 0) {
-            // Jika ada data, kirimkan respons dengan hasil
             res.status(200).json({
                 Status: 200,
                 message: "ok",
                 data: result
             });
         } else {
-            // Jika tabel kosong atau query tidak mengembalikan data
             res.status(200).json({
                 Status: 200,
                 message: "No data found",
@@ -69,13 +91,14 @@ router.get('/namaSiswaKelas', async (req, res) => {
             });
         }
     } catch (error) {
-        console.error("Database query failed:", error.message); // Berikan lebih banyak konteks pada log error
+        console.error("Database query failed:", error.message);
         res.status(500).json({
             Status: 500,
             error: 'Internal Server Error'
         });
     }
 });
+
 
 
 module.exports = router;

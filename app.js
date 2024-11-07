@@ -20,6 +20,8 @@ const EPMapel = require('./routes/masterData/mapel')
 
 //Data Join
 const EPTotKelasSiswa = require('./routes/NonMasterData/joinData')
+const EPNaikKelas = require('./routes/NonMasterData/naikkelas')
+
 
 
 
@@ -57,6 +59,7 @@ app.use('/tes', tes)
 
 // Non Master data
 app.use('/joinNonMaster', EPTotKelasSiswa)
+app.use('/naik', EPNaikKelas)
 
 app.listen(PORT, ()=>{
     console.log(`brtjalan di PORT http://localhost:${PORT}`)
