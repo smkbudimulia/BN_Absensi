@@ -144,7 +144,11 @@ router.post('/add-siswa', async (req, res) => {
   //operasi read: melihat semua akun
 router.get('/all-Siswa',  (req, res) => {
     conn('siswa')
-    .select('*')
+    .select('*',
+        'siswa.id_kelas'
+    )
+    .leftJoin('kelas', 'siswa.id_kelas', 'kelas.id_kelas')
+
     .then((data) => {
         res.status(200).json({
             Status: 200,

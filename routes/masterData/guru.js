@@ -19,46 +19,161 @@ function generateRandomString(length) {
   }
 
 // operasi post: menambah data akun atau administrasi baru
+// router.post('/add-guru', async (req, res) => {
+//     const rombelDataArray = req.body;
+
+//     // Periksa apakah input adalah array
+//     if (Array.isArray(rombelDataArray) && rombelDataArray.length > 0) {
+//         try {
+//             // Iterasi melalui setiap data dalam array
+//             for (const rombelData of rombelDataArray) {
+//                 const {  id_admin, nip, nama_guru, jenis_kelamin,no_telp } = rombelData;
+
+//                 // Validasi input data
+//                 if (!nip || !nama_guru || !jenis_kelamin || !no_telp ) {
+//                     return res.status(400).json({
+//                         Status: 400,
+//                         error: 'Data tidak boleh kosong',
+//                     });
+//                 }
+
+//                 // Cek duplikasi data
+//                 const existingGuru = await conn('guru')
+//                     .where('nip', nip)
+//                     .first();
+
+//                 if (existingGuru) {
+//                     console.log("Data Sudah Ada");
+//                     continue; // Jika data sudah ada, lewati iterasi ini dan lanjutkan ke berikutnya
+//                 }
+
+//                 const idAcak = generateRandomString(5); // ID acak per iterasi
+//                 const addData = {
+//                     id_guru:idAcak, 
+//                     id_admin, 
+//                     nip, 
+//                     nama_guru, 
+//                     jenis_kelamin,
+//                     no_telp,
+//                 };
+
+//                 await conn('guru').insert(addData);
+                
+//             }
+
+//             res.status(201).json({
+//                 Status: 201,
+//                 success: true,
+//                 message: 'Data berhasil ditambahkan',
+//             });
+
+//         } catch (error) {
+//             console.log(error);
+//             res.status(500).json({
+//                 Status: 500,
+//                 error: 'Internal Server Error',
+//             });
+//         }
+
+//     } else {
+//         // Jika input bukan array (data tunggal)
+//         const {  id_admin, nip, nama_guru, jenis_kelamin,no_telp } = req.body;
+
+//         // Validasi input data
+//         if (!nip || !nama_guru || !jenis_kelamin || !no_telp) {
+//             return res.status(400).json({
+//                 Status: 400,
+//                 error: 'Data tidak boleh kosong',
+//             });
+//         }
+
+//         try {
+//             // Cek duplikasi data
+//             const existingGuru = await conn('guru')
+//                     .where('nip', nip)
+//                     .first();
+
+//                 if (existingGuru) {
+//                     console.log("Data Sudah Ada");
+                   
+//                 }
+
+//             const idAcak = generateRandomString(5); // ID acak untuk data tunggal
+//             const addData = {
+//                 id_guru:idAcak, 
+//                     id_admin, 
+//                     nip, 
+//                     nama_guru, 
+//                     jenis_kelamin,
+//                     no_telp
+//             };
+
+//             await conn('guru').insert(addData);
+
+//             res.status(201).json({
+//                 Status: 201,
+//                 success: true,
+//                 message: 'Data berhasil ditambahkan',
+//                 data: addData
+//             });
+
+//         } catch (error) {
+//             console.log(error);
+//             res.status(500).json({
+//                 Status: 500,
+//                 error: 'Internal Server Error',
+//             });
+//         }
+//     }
+// });
+
 router.post('/add-guru', async (req, res) => {
     const rombelDataArray = req.body;
 
-    // Periksa apakah input adalah array
     if (Array.isArray(rombelDataArray) && rombelDataArray.length > 0) {
         try {
-            // Iterasi melalui setiap data dalam array
-            for (const rombelData of rombelDataArray) {
-                const {  id_admin, nip, nama_guru, jenis_kelamin,no_telp } = rombelData;
+            await conn.transaction(async trx => {
+                for (const rombelData of rombelDataArray) {
+                    const { id_admin, nip, nama_guru, jenis_kelamin, no_telp } = rombelData;
 
-                // Validasi input data
-                if (!nip || !nama_guru || !jenis_kelamin || !no_telp ) {
-                    return res.status(400).json({
-                        Status: 400,
-                        error: 'Data tidak boleh kosong',
-                    });
+                    // Validasi input data
+                    if (!nip || !nama_guru || !jenis_kelamin || !no_telp) {
+                        throw new Error('Data tidak boleh kosong');
+                    }
+
+                    // Cek duplikasi data
+                    const existingGuru = await trx('guru')
+                        .where('nip', nip)
+                        .first();
+
+                    if (existingGuru) {
+                        console.log("Data Sudah Ada");
+                        continue; // Jika data sudah ada, lewati iterasi ini dan lanjutkan ke berikutnya
+                    }
+
+                    const idAcak = generateRandomString(5); // ID acak per iterasi
+                    const addData = {
+                        id_guru: idAcak,
+                        id_admin,
+                        nip,
+                        nama_guru,
+                        jenis_kelamin,
+                        no_telp,
+                    };
+
+                    // Insert data ke tabel guru
+                    await trx('guru').insert(addData);
+
+                    // Insert data ke tabel detail_guru
+                    const idAcak2 = generateRandomString(5)
+                    const detailData = {
+                        id_dg: idAcak2,
+                        id_guru: idAcak, // Gunakan id_guru yang baru dibuat
+                        // tambahkan kolom lainnya sesuai struktur tabel detail_guru
+                    };
+                    await trx('detail_guru').insert(detailData);
                 }
-
-                // Cek duplikasi data
-                const existingGuru = await conn('guru')
-                    .where('nip', nip)
-                    .first();
-
-                if (existingGuru) {
-                    console.log("Data Sudah Ada");
-                    continue; // Jika data sudah ada, lewati iterasi ini dan lanjutkan ke berikutnya
-                }
-
-                const idAcak = generateRandomString(5); // ID acak per iterasi
-                const addData = {
-                    id_guru:idAcak, 
-                    id_admin, 
-                    nip, 
-                    nama_guru, 
-                    jenis_kelamin,
-                    no_telp,
-                };
-
-                await conn('guru').insert(addData);
-            }
+            });
 
             res.status(201).json({
                 Status: 201,
@@ -70,13 +185,12 @@ router.post('/add-guru', async (req, res) => {
             console.log(error);
             res.status(500).json({
                 Status: 500,
-                error: 'Internal Server Error',
+                error: error.message || 'Internal Server Error',
             });
         }
 
     } else {
-        // Jika input bukan array (data tunggal)
-        const {  id_admin, nip, nama_guru, jenis_kelamin,no_telp } = req.body;
+        const { id_admin, nip, nama_guru, jenis_kelamin, no_telp } = req.body;
 
         // Validasi input data
         if (!nip || !nama_guru || !jenis_kelamin || !no_telp) {
@@ -87,44 +201,54 @@ router.post('/add-guru', async (req, res) => {
         }
 
         try {
-            // Cek duplikasi data
-            const existingGuru = await conn('guru')
+            await conn.transaction(async trx => {
+                // Cek duplikasi data
+                const existingGuru = await trx('guru')
                     .where('nip', nip)
                     .first();
 
                 if (existingGuru) {
-                    console.log("Data Sudah Ada");
-                   
+                    throw new Error('Data sudah ada');
                 }
 
-            const idAcak = generateRandomString(5); // ID acak untuk data tunggal
-            const addData = {
-                id_guru:idAcak, 
-                    id_admin, 
-                    nip, 
-                    nama_guru, 
+                const idAcak = generateRandomString(5); // ID acak untuk data tunggal
+                const addData = {
+                    id_guru: idAcak,
+                    id_admin,
+                    nip,
+                    nama_guru,
                     jenis_kelamin,
-                    no_telp
-            };
+                    no_telp,
+                };
 
-            await conn('guru').insert(addData);
+                // Insert data ke tabel guru
+                await trx('guru').insert(addData);
+
+                // Insert data ke tabel detail_guru
+                const detailData = {
+                    id_guru: idAcak, // Gunakan id_guru yang baru dibuat
+                    // tambahkan kolom lainnya sesuai struktur tabel detail_guru
+                };
+                await trx('detail_guru').insert(detailData);
+            });
 
             res.status(201).json({
                 Status: 201,
                 success: true,
                 message: 'Data berhasil ditambahkan',
-                data: addData
             });
 
         } catch (error) {
             console.log(error);
             res.status(500).json({
                 Status: 500,
-                error: 'Internal Server Error',
+                error: error.message || 'Internal Server Error',
             });
         }
     }
 });
+
+
 
   //operasi read: melihat semua akun
 router.get('/all-guru',  (req, res) => {
