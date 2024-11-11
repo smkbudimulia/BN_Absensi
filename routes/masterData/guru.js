@@ -129,16 +129,23 @@ function generateRandomString(length) {
 
 router.post('/add-guru', async (req, res) => {
     const rombelDataArray = req.body;
+    const resultMessages = [];
 
     if (Array.isArray(rombelDataArray) && rombelDataArray.length > 0) {
         try {
             await conn.transaction(async trx => {
                 for (const rombelData of rombelDataArray) {
-                    const { id_admin, nip, nama_guru, jenis_kelamin, no_telp } = rombelData;
+                    const { id_admin, nip, nama_guru, jenis_kelamin, no_telp, id_mapel,
+                        id_kelas, id_rombel, email, pas, foto, walas, barcode } = rombelData;
 
                     // Validasi input data
                     if (!nip || !nama_guru || !jenis_kelamin || !no_telp) {
-                        throw new Error('Data tidak boleh kosong');
+                        resultMessages.push({
+                            nip,
+                            status: 'Gagal',
+                            message: 'Data tidak boleh kosong',
+                        });
+                        continue; // Lewati iterasi jika data tidak valid
                     }
 
                     // Cek duplikasi data
@@ -147,11 +154,15 @@ router.post('/add-guru', async (req, res) => {
                         .first();
 
                     if (existingGuru) {
-                        console.log("Data Sudah Ada");
-                        continue; // Jika data sudah ada, lewati iterasi ini dan lanjutkan ke berikutnya
+                        resultMessages.push({
+                            status: 'Gagal',
+                            message: `Data guru dengan NIP sudah ada`,
+                        });
+                        continue; // Lewati iterasi jika data sudah ada
                     }
 
-                    const idAcak = generateRandomString(5); // ID acak per iterasi
+                    // ID acak per iterasi
+                    const idAcak = generateRandomString(5);
                     const addData = {
                         id_guru: idAcak,
                         id_admin,
@@ -165,20 +176,33 @@ router.post('/add-guru', async (req, res) => {
                     await trx('guru').insert(addData);
 
                     // Insert data ke tabel detail_guru
-                    const idAcak2 = generateRandomString(5)
+                    const idAcak2 = generateRandomString(5);
                     const detailData = {
                         id_dg: idAcak2,
-                        id_guru: idAcak, // Gunakan id_guru yang baru dibuat
+                        id_guru: idAcak,
+                        id_mapel,
+                        id_kelas, 
+                        email, 
+                        pas, 
+                        foto, 
+                        walas, 
+                        barcode,// Gunakan id_guru yang baru dibuat
                         // tambahkan kolom lainnya sesuai struktur tabel detail_guru
                     };
                     await trx('detail_guru').insert(detailData);
+
+                    resultMessages.push({
+                        nip,
+                        status: 'Berhasil',
+                        message: 'Data berhasil ditambahkan',
+                    });
                 }
             });
 
-            res.status(201).json({
-                Status: 201,
+            res.status(207).json({
+                Status: 207,
                 success: true,
-                message: 'Data berhasil ditambahkan',
+                results: resultMessages,
             });
 
         } catch (error) {
@@ -190,153 +214,156 @@ router.post('/add-guru', async (req, res) => {
         }
 
     } else {
-        const { id_admin, nip, nama_guru, jenis_kelamin, no_telp } = req.body;
-
-        // Validasi input data
-        if (!nip || !nama_guru || !jenis_kelamin || !no_telp) {
-            return res.status(400).json({
-                Status: 400,
-                error: 'Data tidak boleh kosong',
-            });
-        }
-
-        try {
-            await conn.transaction(async trx => {
-                // Cek duplikasi data
-                const existingGuru = await trx('guru')
-                    .where('nip', nip)
-                    .first();
-
-                if (existingGuru) {
-                    throw new Error('Data sudah ada');
-                }
-
-                const idAcak = generateRandomString(5); // ID acak untuk data tunggal
-                const addData = {
-                    id_guru: idAcak,
-                    id_admin,
-                    nip,
-                    nama_guru,
-                    jenis_kelamin,
-                    no_telp,
-                };
-
-                // Insert data ke tabel guru
-                await trx('guru').insert(addData);
-
-                // Insert data ke tabel detail_guru
-                const detailData = {
-                    id_guru: idAcak, // Gunakan id_guru yang baru dibuat
-                    // tambahkan kolom lainnya sesuai struktur tabel detail_guru
-                };
-                await trx('detail_guru').insert(detailData);
-            });
-
-            res.status(201).json({
-                Status: 201,
-                success: true,
-                message: 'Data berhasil ditambahkan',
-            });
-
-        } catch (error) {
-            console.log(error);
-            res.status(500).json({
-                Status: 500,
-                error: error.message || 'Internal Server Error',
-            });
-        }
+        res.status(400).json({
+            Status: 400,
+            success: false,
+            message: 'Data tidak valid atau kosong',
+        });
     }
 });
 
 
 
+
+
   //operasi read: melihat semua akun
-router.get('/all-guru',  (req, res) => {
-    conn('guru')
-    .select('*')
-    .then((data) => {
+  router.get('/all-guru', async (req, res) => {
+    try {
+        const data = await conn('guru')
+            .leftJoin('detail_guru', 'guru.id_guru', '=', 'detail_guru.id_guru')
+            .select('*'); // Mengambil semua kolom dari kedua tabel
+
         res.status(200).json({
             Status: 200,
-            message: "ok",
-            data: data
-        })
-    }).catch((error) => {
-        console.log(error);
-        res.status(500).json({ 
-          Status: 500,
-          error: 'Internal Server Error' 
+            success: true,
+            data: data,
         });
-    })
-     });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            Status: 500,
+            error: error.message || 'Internal Server Error',
+        });
+    }
+});
+
 
      // Operasi Put/ Update: merubah data yang sudah ada pada database
-     router.put('/edit-guru/:id/:nip', async (req, res) => {
-        const id_guru = req.params.id;
-        const nip = req.params.nip;
-        const {   nama_guru, jenis_kelamin,no_telp } = req.body;
+     router.put('/edit-guru', async (req, res) => {
+        const rombelDataArray = req.body;
+        const resultMessages = [];
     
-        // Validasi inputan kosong
-        // if (!nip || !nama_guru || !jenis_kelamin || !email || !rombel || !no_telp) {
-        //     return res.status(400).json({
-        //         Status: 400,
-        //         error: 'Data tidak boleh kosong'
-        //     });
-        // }
+        if (Array.isArray(rombelDataArray) && rombelDataArray.length > 0) {
+            try {
+                await conn.transaction(async trx => {
+                    for (const rombelData of rombelDataArray) {
+                        const { id_guru, nip, nama_guru, jenis_kelamin, no_telp, id_mapel, id_kelas, id_rombel,
+                            email, pass, foto, walas, barcode,
+                         } = rombelData;
     
-        try {
-            // Cek apakah data dengan ID dan NIS yang dimaksud ada
-            const existingGuru = await conn('guru')
-            .where('nip', nip)
-            .first();
+                        // Validasi input data
+                        if (!id_guru ) {
+                            resultMessages.push({
+                                nip,
+                                status: 'Gagal',
+                                message: 'Data tidak boleh kosong',
+                            });
+                            continue; // Lewati iterasi jika data tidak valid
+                        }
     
-            if (!existingGuru) {
-                return res.status(404).json({
-                    Status: 404,
-                    error: 'Tidak ada data'
+                        // Cek keberadaan data berdasarkan id_guru
+                        const existingGuru = await trx('guru')
+                            .where({ id_guru })
+                            .first();
+    
+                        if (!existingGuru) {
+                            // Jika data tidak ditemukan, tambahkan pesan ke hasil
+                            resultMessages.push({
+                                nip,
+                                status: 'Gagal',
+                                message: `Data guru dengan ID ${id_guru} dan NIP ${nip} tidak ditemukan`,
+                            });
+                            continue; // Lewati iterasi jika data tidak ditemukan
+                        }
+    
+                        // Update data di tabel guru
+                        await trx('guru')
+                            .where({ id_guru })
+                            .update({
+                                nip,
+                                nama_guru,
+                                jenis_kelamin,
+                                no_telp,
+                            });
+    
+                        // Update data di tabel detail_guru jika ada data detail
+                        const existingDetailGuru = await trx('detail_guru')
+                            .where({ id_guru })
+                            .first();
+    
+                        if (existingDetailGuru) {
+                            // Jika data detail_guru ada, update
+                            await trx('detail_guru')
+                                .where({ id_guru })
+                                .update({
+                                    id_mapel,
+                                    id_kelas,
+                                    id_rombel,
+                                    email, 
+                                    pass, 
+                                    foto, 
+                                    walas, 
+                                    barcode,
+                                });
+                        } else {
+                            // Jika data detail_guru tidak ada, buat entri baru
+                            const idAcak2 = generateRandomString(5);
+                            const detailData = {
+                                id_dg: idAcak2,
+                                id_guru: id_guru,
+                                id_mapel,
+                                id_kelas,
+                                email, 
+                                pass, 
+                                foto, 
+                                walas, 
+                                barcode,
+                            };
+                            await trx('detail_guru').insert(detailData);
+                        }
+    
+                        resultMessages.push({
+                            nip,
+                            status: 'Berhasil',
+                            message: 'Data berhasil diperbarui di kedua tabel',
+                        });
+                    }
+                });
+    
+                res.status(207).json({
+                    Status: 207,
+                    success: true,
+                    results: resultMessages,
+                });
+    
+            } catch (error) {
+                console.log(error);
+                res.status(500).json({
+                    Status: 500,
+                    error: error.message || 'Internal Server Error',
                 });
             }
     
-            // Cek apakah ada NIS yang sama di data guru lain
-            const duplicateCheck = await conn('guru')
-                .where('nip', nip)
-                .andWhere('id_guru', '!=', id_guru) // Make sure it's not the same record being updated
-                .first();
-    
-            if (duplicateCheck) {
-                return res.status(400).json({
-                    Status: 400,
-                    error: 'NIP sudah digunakan oleh Guru lain'
-                });
-            }
-    
-            // Update data
-            const updateGuru = {
-                // id_guru:idAcak, 
-                // id_admin, 
-                nip, 
-                nama_guru, 
-                jenis_kelamin,
-                no_telp,
-            };
-    
-            await conn('guru')
-                .where('id_guru', id_guru)
-                .andWhere('nip', nip)
-                .update(updateGuru);
-    
-            res.status(200).json({
-                Status: 200,
-                message: 'Data berhasil diperbarui',
-                data: updateGuru
-            });
-        } catch (error) {
-            console.error(error);
-            res.status(500).json({
-                Status: 500,
-                error: 'Internal Server Error'
+        } else {
+            res.status(400).json({
+                Status: 400,
+                success: false,
+                message: 'Data tidak valid atau kosong',
             });
         }
     });
+    
+    
     
     //operasi delete: menghapus data by Id
 router.delete('/hapus-guru/:id', async (req, res)=>{
@@ -359,13 +386,17 @@ router.delete('/hapus-guru/:id', async (req, res)=>{
         .where('id_guru', id_guru)
         .del();
 
+        await conn('detail_guru')
+        .where('id_guru', id_guru)
+        .del();
+
         res.status(200).json({
             Status: 200,
             message: 'Data berhasil dihapus'
         })
     } catch (error) {
         console.error(error);
-    res.status(500).json({
+    res.status(500).json({              
       Status: 500,
       error: 'Internal Server Error'
     })        
