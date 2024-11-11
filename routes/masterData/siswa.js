@@ -145,10 +145,13 @@ router.post('/add-siswa', async (req, res) => {
 router.get('/all-Siswa',  (req, res) => {
     conn('siswa')
     .select('*',
-        'siswa.id_kelas'
+        'siswa.id_tahun_pelajaran',
+        'siswa.id_kelas',
+        'siswa.id_rombel'
     )
     .leftJoin('kelas', 'siswa.id_kelas', 'kelas.id_kelas')
-
+    .leftJoin('tahun_ajaran', 'siswa.id_tahun_pelajaran', 'tahun_ajaran.id_tahun_pelajaran')
+    .leftJoin('rombel_belajar', 'siswa.id_rombel', 'rombel_belajar.id_rombel')
     .then((data) => {
         res.status(200).json({
             Status: 200,
