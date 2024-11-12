@@ -7,7 +7,7 @@ const verifyToken = require('../../middleware/jwToken')
 
 
 // data jumlah kelas dan siswanya
-router.get('/KelasSiswaTotal', async (req, res) => {
+router.get('/total-kelas-siswa', async (req, res) => {
     try {
         const data = await conn('siswa')
             .select(
@@ -57,7 +57,7 @@ router.get('/KelasSiswaTotal', async (req, res) => {
 });
 
 //home page izin(sakit, ket lain, pulang, absensi)
-router.get('/namaSiswaKelas', async (req, res) => {
+router.get('/nama-siswa-kelas', async (req, res) => {
     try {
         const data = await conn('siswa')
             .select(

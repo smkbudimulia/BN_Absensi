@@ -35,7 +35,7 @@ router.post('/add-Admin',  async (req, res) => {
   const idAcak = generateRandomString(5);
   
   // Validasi input kosong
-  if (!nama_admin || !alamat || !jenis_kelamin || !no_telp || !email || !username || !pass || !foto || !status) {
+  if (!nama_admin || !alamat || !jenis_kelamin || !no_telp || !email || !username || !pass || !status) {
       return res.status(400).json({ 
         Status: 400,
         error: 'Data tidak boleh kosong' 
