@@ -231,7 +231,11 @@ router.post('/add-guru', async (req, res) => {
     try {
         const data = await conn('guru')
             .leftJoin('detail_guru', 'guru.id_guru', '=', 'detail_guru.id_guru')
-            .select('*'); // Mengambil semua kolom dari kedua tabel
+            .select('*') // Mengambil semua kolom dari kedua tabel
+            .leftJoin('mapel', 'detail_guru.id_mapel', 'mapel.id_mapel')
+            .leftJoin('kelas', 'detail_guru.id_kelas', 'kelas.id_kelas')
+            .leftJoin('rombel_belajar', 'detail_guru.id_rombel', 'rombel_belajar.id_rombel')
+           
 
         res.status(200).json({
             Status: 200,
