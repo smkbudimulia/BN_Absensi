@@ -326,8 +326,9 @@ router.post('/add-guru', async (req, res) => {
                             const detailData = {
                                 id_dg: idAcak2,
                                 id_guru: id_guru,
-                                id_mapel,
-                                id_kelas,
+                                id_mapel: JSON.stringify(id_mapel),
+                                id_kelas: JSON.stringify(id_kelas),
+                                id_rombel: JSON.stringify(id_rombel), 
                                 email, 
                                 pass, 
                                 foto, 

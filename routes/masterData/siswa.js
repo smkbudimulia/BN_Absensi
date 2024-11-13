@@ -20,126 +20,220 @@ function generateRandomString(length) {
     return randomString;
 }
 
-// Operasi Post: untuk menambah data baru
-router.post('/add-siswa', async (req, res) => {
-  const rombelDataArray = req.body;
+// // Operasi Post: untuk menambah data baru
+// router.post('/add-siswa', async (req, res) => {
+//   const rombelDataArray = req.body;
 
-  // Periksa apakah input adalah array
-  if (Array.isArray(rombelDataArray) && rombelDataArray.length > 0) {
-      try {
-          // Iterasi melalui setiap data dalam array
-          for (const rombelData of rombelDataArray) {
-              const { id_siswa, id_admin, nis,nama_siswa,jenis_kelamin, id_tahun_pelajaran,id_kelas,id_rombel,nama_wali,nomor_wali} = rombelData;
+//   // Periksa apakah input adalah array
+//   if (Array.isArray(rombelDataArray) && rombelDataArray.length > 0) {
+//       try {
+//           // Iterasi melalui setiap data dalam array
+//           for (const rombelData of rombelDataArray) {
+//               const { id_siswa, id_admin, nis,nama_siswa,jenis_kelamin, id_tahun_pelajaran,id_kelas,id_rombel,nama_wali,nomor_wali} = rombelData;
 
-              // Validasi input data
-              if (!id_siswa || !nis || !nama_siswa || !jenis_kelamin ||!nama_wali || !nomor_wali) {
-                  return res.status(400).json({
-                      Status: 400,
-                      error: 'Data tidak boleh kosong',
-                  });
-              }
+//               // Validasi input data
+//               if (!id_siswa || !nis || !nama_siswa || !jenis_kelamin ||!nama_wali || !nomor_wali) {
+//                   return res.status(400).json({
+//                       Status: 400,
+//                       error: 'Data tidak boleh kosong',
+//                   });
+//               }
 
-              // Cek duplikasi data
-              const existingSiswa = await conn('siswa')
-                  .where('id_siswa', id_siswa)
-                  .orWhere('nis', nis)
-                  .first();
+//               // Cek duplikasi data
+//               const existingSiswa = await conn('siswa')
+//                   .where('id_siswa', id_siswa)
+//                   .orWhere('nis', nis)
+//                   .first();
 
-              if (existingSiswa) {
-                  console.log(`Data dengan NIS ${nis} sudah ada, melewati proses penyimpanan.`);
-                  continue; // Jika data sudah ada, lewati iterasi ini dan lanjutkan ke berikutnya
-              }
+//               if (existingSiswa) {
+//                   console.log(`Data dengan NIS ${nis} sudah ada, melewati proses penyimpanan.`);
+//                   continue; // Jika data sudah ada, lewati iterasi ini dan lanjutkan ke berikutnya
+//               }
 
              
-              const addData = {
-                id_siswa, 
-                id_admin,
-                nis,
-                nama_siswa,
-                jenis_kelamin, 
-                id_tahun_pelajaran,
-                id_kelas,
-                id_rombel,
-                nama_wali,
-                nomor_wali,
-              };
+//               const addData = {
+//                 id_siswa, 
+//                 id_admin,
+//                 nis,
+//                 nama_siswa,
+//                 jenis_kelamin, 
+//                 id_tahun_pelajaran,
+//                 id_kelas,
+//                 id_rombel,
+//                 nama_wali,
+//                 nomor_wali,
+//               };
 
-              await conn('siswa').insert(addData);
-          }
+//               await conn('siswa').insert(addData);
+//           }
 
-          res.status(201).json({
-              Status: 201,
-              success: true,
-              message: 'Data berhasil ditambahkan',
-          });
+//           res.status(201).json({
+//               Status: 201,
+//               success: true,
+//               message: 'Data berhasil ditambahkan',
+//           });
 
-      } catch (error) {
-          console.log(error);
-          res.status(500).json({
-              Status: 500,
-              error: 'Internal Server Error',
-          });
-      }
+//       } catch (error) {
+//           console.log(error);
+//           res.status(500).json({
+//               Status: 500,
+//               error: 'Internal Server Error',
+//           });
+//       }
 
-  } else {
-      // Jika input bukan array (data tunggal)
-      const { id_siswa, id_admin, nis,nama_siswa,jenis_kelamin, id_tahun_pelajaran,id_kelas,id_rombel,nama_wali,nomor_wali } = req.body;
+//   } else {
+//       // Jika input bukan array (data tunggal)
+//       const { id_siswa, id_admin, nis,nama_siswa,jenis_kelamin, id_tahun_pelajaran,id_kelas,id_rombel,nama_wali,nomor_wali } = req.body;
 
-      // Validasi input data
-      if (!id_siswa || !nis || !nama_siswa || !jenis_kelamin ||!nama_wali || !nomor_wali) {
-        return res.status(400).json({
-            Status: 400,
-            error: 'Data tidak boleh kosong',
-        });
-    }
+//       // Validasi input data
+//       if (!id_siswa || !nis || !nama_siswa || !jenis_kelamin ||!nama_wali || !nomor_wali) {
+//         return res.status(400).json({
+//             Status: 400,
+//             error: 'Data tidak boleh kosong',
+//         });
+//     }
 
-      try {
-          // Cek duplikasi data
-          const existingSiswa = await conn('siswa')
-          .where('id_siswa', id_siswa)
-          .orWhere('nis', nis)
-          .first();
+//       try {
+//           // Cek duplikasi data
+//           const existingSiswa = await conn('siswa')
+//           .where('id_siswa', id_siswa)
+//           .orWhere('nis', nis)
+//           .first();
 
-          if (existingSiswa) {
-            return res.status(400).json({
-                Status: 400,
-                error: 'Data sudah ada',
+//           if (existingSiswa) {
+//             return res.status(400).json({
+//                 Status: 400,
+//                 error: 'Data sudah ada',
+//             });
+//         }
+
+         
+//         const addData = {
+//           id_siswa, 
+//           id_admin,
+//           nis,
+//           nama_siswa,
+//           jenis_kelamin, 
+//           id_tahun_pelajaran,
+//           id_kelas,
+//           id_rombel,
+//           nama_wali,
+//           nomor_wali,
+//         };
+
+//           await conn('siswa').insert(addData);
+
+//           res.status(201).json({
+//               Status: 201,
+//               success: true,
+//               message: 'Data berhasil ditambahkan',
+//               data: addData
+//           });
+
+//       } catch (error) {
+//           console.log(error);
+//           res.status(500).json({
+//               Status: 500,
+//               error: 'Internal Server Error',
+//           });
+//       }
+//   }
+// });
+
+router.post('/add-siswa', async (req, res) => {
+    const siswaDataArray = req.body;
+    const resultMessages = [];
+
+    if (Array.isArray(siswaDataArray) && siswaDataArray.length > 0) {
+        try {
+            await conn.transaction(async trx => {
+                for (const siswaData of siswaDataArray) {
+                    const {  id_admin, nis,nama_siswa,jenis_kelamin, id_tahun_pelajaran,id_kelas,id_rombel,nama_wali,nomor_wali, email, pass, foto, barcode, } = siswaData;
+
+                    // Validasi input data
+                    if (!nis || !nama_siswa || !jenis_kelamin ) {
+                        resultMessages.push({
+                            nis,
+                            status: 'Gagal',
+                            message: 'Data tidak boleh kosong',
+                        });
+                        continue; // Lewati iterasi jika data tidak valid
+                    }
+
+                    // Cek duplikasi data
+                    const existingSiswa = await trx('siswa')
+                        .where('nis', nis)
+                        .first();
+
+                    if (existingSiswa) {
+                        resultMessages.push({
+                            status: 'Gagal',
+                            message: `Data guru dengan NIP sudah ada`,
+                        });
+                        continue; // Lewati iterasi jika data sudah ada
+                    }
+
+                    // ID acak per iterasi
+                    const idAcak = generateRandomString(5);
+                    const addData = {
+                        id_siswa: idAcak,
+                        id_admin, 
+                        nis,
+                        nama_siswa,
+                        jenis_kelamin,
+                        id_tahun_pelajaran,
+                        id_kelas,
+                        id_rombel,
+                        nama_wali,
+                        nomor_wali
+                    };
+
+                    // Insert data ke tabel guru
+                    await trx('siswa').insert(addData);
+
+                    // Insert data ke tabel detail_guru
+                    const idAcak2 = generateRandomString(5);
+                    const detailData = {
+                        id_ds: idAcak2,
+                        id_siswa: idAcak,
+                        email, 
+                        pass, 
+                        foto,
+                        barcode,// Gunakan id_guru yang baru dibuat
+                        // tambahkan kolom lainnya sesuai struktur tabel detail_guru
+                    };
+                    await trx('detail_siswa').insert(detailData);
+
+                    resultMessages.push({
+                        nis,
+                        status: 'Berhasil',
+                        message: 'Data berhasil ditambahkan',
+                    });
+                }
+            });
+
+            res.status(207).json({
+                Status: 207,
+                success: true,
+                results: resultMessages,
+            });
+
+        } catch (error) {
+            console.log(error);
+            res.status(500).json({
+                Status: 500,
+                error: error.message || 'Internal Server Error',
             });
         }
 
-         
-        const addData = {
-          id_siswa, 
-          id_admin,
-          nis,
-          nama_siswa,
-          jenis_kelamin, 
-          id_tahun_pelajaran,
-          id_kelas,
-          id_rombel,
-          nama_wali,
-          nomor_wali,
-        };
-
-          await conn('siswa').insert(addData);
-
-          res.status(201).json({
-              Status: 201,
-              success: true,
-              message: 'Data berhasil ditambahkan',
-              data: addData
-          });
-
-      } catch (error) {
-          console.log(error);
-          res.status(500).json({
-              Status: 500,
-              error: 'Internal Server Error',
-          });
-      }
-  }
+    } else {
+        res.status(400).json({
+            Status: 400,
+            success: false,
+            message: 'Data tidak valid atau kosong',
+        });
+    }
 });
-
 
   //operasi read: melihat semua akun
 router.get('/all-Siswa',  (req, res) => {
@@ -168,75 +262,113 @@ router.get('/all-Siswa',  (req, res) => {
      });
 
      // Operasi Put/ Update: merubah data yang sudah ada pada database
-     router.put('/edit-siswa/:id/:nis', async (req, res) => {
-        const id_siswa = req.params.id;
-        const nis = req.params.nis;
-        const { id_admin, nama_siswa,jenis_kelamin, id_tahun_pelajaran,id_kelas,id_rombel,nama_wali,nomor_wali } = req.body;
+     router.put('/edit-siswa', async (req, res) => {
+        const siswaDataArray = req.body;
+        const resultMessages = [];
     
-        // Validasi inputan kosong
-        if (!id_siswa || !nis || !nama_siswa || !jenis_kelamin ||!nama_wali || !nomor_wali) {
-            return res.status(400).json({
+        if (Array.isArray(siswaDataArray) && siswaDataArray.length > 0) {
+            try {
+                await conn.transaction(async trx => {
+                    for (const siswaData of siswaDataArray) {
+                        const { id_siswa, nis,nama_siswa,jenis_kelamin, id_tahun_pelajaran,id_kelas,id_rombel,nama_wali,nomor_wali, email, pass, foto, barcode,
+                         } = siswaData;
+    
+                        // Validasi input data
+                        if (!id_siswa ) {
+                            resultMessages.push({
+                                nis,
+                                status: 'Gagal',
+                                message: 'Data tidak boleh kosong',
+                            });
+                            continue; // Lewati iterasi jika data tidak valid
+                        }
+    
+                        // Cek keberadaan data berdasarkan id_guru
+                        const existingSiswa = await trx('siswa')
+                            .where({ id_siswa })
+                            .first();
+    
+                        if (!existingSiswa) {
+                            // Jika data tidak ditemukan, tambahkan pesan ke hasil
+                            resultMessages.push({
+                                status: 'Gagal',
+                                message: `Data tidak ditemukan`,
+                            });
+                            continue; // Lewati iterasi jika data tidak ditemukan
+                        }
+    
+                        // Update data di tabel guru
+                        await trx('siswa')
+                            .where({ id_siswa })
+                            .update({
+                                
+                        nis,
+                        nama_siswa,
+                        jenis_kelamin,
+                        id_tahun_pelajaran,
+                        id_kelas,
+                        id_rombel,
+                        nama_wali,
+                        nomor_wali
+                            });
+    
+                        // Update data di tabel detail_guru jika ada data detail
+                        const existingDetailSiswa = await trx('detail_siswa')
+                            .where({ id_siswa })
+                            .first();
+    
+                        if (existingDetailSiswa) {
+                            // Jika data detail_guru ada, update
+                            await trx('detail_siswa')
+                                .where({ id_siswa })
+                                .update({
+                                  
+                                    email, 
+                                    pass, 
+                                    foto,
+                                    barcode,
+                                });
+                        } else {
+                            // Jika data detail_guru tidak ada, buat entri baru
+                            const idAcak2 = generateRandomString(5);
+                            const detailData = {
+                                id_ds: idAcak2,
+                                id_siswa: id_siswa,
+                                email, 
+                                pass, 
+                                foto,
+                                barcode,
+                            };
+                            await trx('detail_siswa').insert(detailData);
+                        }
+    
+                        resultMessages.push({
+                            nis,
+                            status: 'Berhasil',
+                            message: 'Data berhasil diperbarui di kedua tabel',
+                        });
+                    }
+                });
+    
+                res.status(207).json({
+                    Status: 207,
+                    success: true,
+                    results: resultMessages,
+                });
+    
+            } catch (error) {
+                console.log(error);
+                res.status(500).json({
+                    Status: 500,
+                    error: error.message || 'Internal Server Error',
+                });
+            }
+    
+        } else {
+            res.status(400).json({
                 Status: 400,
-                error: 'Data tidak boleh kosong'
-            });
-        }
-    
-        try {
-            // Cek apakah data dengan ID dan NIS yang dimaksud ada
-            const existingSiswa = await conn('siswa')
-                .where('id_siswa', id_siswa)
-                // .andWhere('nis', nis)
-                .first();
-    
-            if (!existingSiswa) {
-                return res.status(404).json({
-                    Status: 404,
-                    error: 'Tidak ada data'
-                });
-            }
-    
-            // Cek apakah ada NIS yang sama di data siswa lain
-            const duplicateCheck = await conn('siswa')
-                .where('nis', nis)
-                .andWhere('id_siswa', '!=', id_siswa) // Make sure it's not the same record being updated
-                .first();
-    
-            if (duplicateCheck) {
-                return res.status(400).json({
-                    Status: 400,
-                    error: 'NIS sudah digunakan oleh siswa lain'
-                });
-            }
-    
-            // Update data
-            const updateSiswa = {
-              id_siswa, 
-              id_admin,
-              nis,
-              nama_siswa,
-              jenis_kelamin, 
-              id_tahun_pelajaran,
-              id_kelas,
-              id_rombel,
-              nama_wali,
-              nomor_wali
-            };
-    
-            await conn('siswa')
-                .where('id_siswa', id_siswa)
-                .andWhere('nis', nis)
-                .update(updateSiswa);
-    
-            res.status(200).json({
-                Status: 200,
-                message: 'Data berhasil diperbarui',
-                data: updateSiswa
-            });
-        } catch (error) {
-            console.error(error);
-            res.status(500).json({
-                Status: 500,
-                error: 'Internal Server Error'
+                success: false,
+                message: 'Data tidak valid atau kosong',
             });
         }
     });
