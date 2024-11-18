@@ -175,14 +175,10 @@ router.post('/add-guru', async (req, res) => {
                     // Insert data ke tabel guru
                     await trx('guru').insert(addData);
 
-                    // Insert data ke tabel detail_guru
-                    const idAcak2 = generateRandomString(5);
+                    // Insert data ke tabel detail_guru                    
                     const detailData = {
-                        id_dg: idAcak2,
+                        
                         id_guru: idAcak,
-                        id_mapel: JSON.stringify(id_mapel),
-                        id_kelas: JSON.stringify(id_kelas),
-                        id_rombel: JSON.stringify(id_rombel), 
                         email, 
                         pas, 
                         foto, 
@@ -192,6 +188,17 @@ router.post('/add-guru', async (req, res) => {
                     };
                     await trx('detail_guru').insert(detailData);
 
+                    const mengampu = {
+                        
+                        id_guru: idAcak,
+                        id_mapel,
+                        id_kelas,
+                        id_rombel,
+                       
+                    };
+                    await trx('mengampu').insert(mengampu);
+
+                    
                     resultMessages.push({
                         nip,
                         status: 'Berhasil',
@@ -235,8 +242,25 @@ router.post('/add-guru', async (req, res) => {
             .select('*') // Mengambil semua kolom dari kedua tabel
             .leftJoin('mapel', 'detail_guru.id_mapel', 'mapel.id_mapel')
             .leftJoin('kelas', 'detail_guru.id_kelas', 'kelas.id_kelas')
-            .leftJoin('rombel_belajar', 'detail_guru.id_rombel', 'rombel_belajar.id_rombel')
-           
+            .leftJoin('rombel_belajar', 'detail_guru.id_rombel', 'rombel_belajar.id_rombel');
+        
+        // Log data untuk debugging
+        // console.log("Data dari Database:", data);
+
+        // const AllData = data.map(item => {
+        //     let id_mapelArray = [];
+        //     if (item.id_mapel && item.id_mapel.trim() !== "") {
+        //         try {
+        //             id_mapelArray = JSON.parse(item.id_mapel);
+        //         } catch (error) {
+        //             console.error('Error parsing JSON:', error);
+        //         }
+        //     }
+        //     return {
+        //         ...item,
+        //         id_mapel: id_mapelArray.join(", "),
+        //     };
+        // });
 
         res.status(200).json({
             Status: 200,
@@ -251,6 +275,7 @@ router.post('/add-guru', async (req, res) => {
         });
     }
 });
+
 
 
      // Operasi Put/ Update: merubah data yang sudah ada pada database
@@ -311,9 +336,9 @@ router.post('/add-guru', async (req, res) => {
                             await trx('detail_guru')
                                 .where({ id_guru })
                                 .update({
-                                    id_mapel,
-                                    id_kelas,
-                                    id_rombel,
+                                    id_mapel: JSON.stringify(id_mapel),
+                                    id_kelas: Array.isArray(id_kelas) ? id_kelas.join(", ") : id_kelas,
+                                    id_rombel:JSON.stringify(id_rombel),
                                     email, 
                                     pass, 
                                     foto, 
@@ -326,9 +351,9 @@ router.post('/add-guru', async (req, res) => {
                             const detailData = {
                                 id_dg: idAcak2,
                                 id_guru: id_guru,
-                                id_mapel: JSON.stringify(id_mapel),
-                                id_kelas: JSON.stringify(id_kelas),
-                                id_rombel: JSON.stringify(id_rombel), 
+                                id_mapel: Array.isArray(id_mapel) ? id_mapel.join(", ") : id_mapel,
+                                id_kelas: Array.isArray(id_kelas) ? id_kelas.join(", ") : id_kelas,
+                                id_rombel: Array.isArray(id_rombel) ? id_rombel.join(", ") : id_rombel,
                                 email, 
                                 pass, 
                                 foto, 
