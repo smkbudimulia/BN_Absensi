@@ -135,8 +135,7 @@ router.post('/add-guru', async (req, res) => {
         try {
             await conn.transaction(async trx => {
                 for (const rombelData of rombelDataArray) {
-                    const { id_admin, nip, nama_guru, jenis_kelamin, no_telp, id_mapel,
-                        id_kelas, id_rombel, email, pas, foto, walas, barcode } = rombelData;
+                    const { id_admin, nip, nama_guru, jenis_kelamin, no_telp, email, pas, foto, staf,walas, barcode } = rombelData;
 
                     // Validasi input data
                     if (!nip || !nama_guru || !jenis_kelamin || !no_telp) {
@@ -177,28 +176,18 @@ router.post('/add-guru', async (req, res) => {
 
                     // Insert data ke tabel detail_guru                    
                     const detailData = {
-                        
                         id_guru: idAcak,
                         email, 
                         pas, 
                         foto, 
+                        staf,
                         walas, 
                         barcode,// Gunakan id_guru yang baru dibuat
                         // tambahkan kolom lainnya sesuai struktur tabel detail_guru
                     };
                     await trx('detail_guru').insert(detailData);
 
-                    const mengampu = {
-                        
-                        id_guru: idAcak,
-                        id_mapel,
-                        id_kelas,
-                        id_rombel,
-                       
-                    };
-                    await trx('mengampu').insert(mengampu);
-
-                    
+                                        
                     resultMessages.push({
                         nip,
                         status: 'Berhasil',
@@ -232,17 +221,16 @@ router.post('/add-guru', async (req, res) => {
 
 
 
-
-
   //operasi read: melihat semua akun
   router.get('/all-guru', async (req, res) => {
     try {
         const data = await conn('guru')
             .leftJoin('detail_guru', 'guru.id_guru', '=', 'detail_guru.id_guru')
+            .leftJoin('mengampu','guru.id_guru','=','mengampu.id_guru')
             .select('*') // Mengambil semua kolom dari kedua tabel
-            .leftJoin('mapel', 'detail_guru.id_mapel', 'mapel.id_mapel')
-            .leftJoin('kelas', 'detail_guru.id_kelas', 'kelas.id_kelas')
-            .leftJoin('rombel_belajar', 'detail_guru.id_rombel', 'rombel_belajar.id_rombel');
+            .leftJoin('mapel', 'mengampu.id_mapel', 'mapel.id_mapel')
+            .leftJoin('kelas', 'mengampu.id_kelas', 'kelas.id_kelas')
+            .leftJoin('rombel_belajar', 'mengampu.id_rombel', 'rombel_belajar.id_rombel')
         
         // Log data untuk debugging
         // console.log("Data dari Database:", data);
@@ -287,8 +275,8 @@ router.post('/add-guru', async (req, res) => {
             try {
                 await conn.transaction(async trx => {
                     for (const rombelData of rombelDataArray) {
-                        const { id_guru, nip, nama_guru, jenis_kelamin, no_telp, id_mapel, id_kelas, id_rombel,
-                            email, pass, foto, walas, barcode,
+                        const { id_guru, nip, nama_guru, jenis_kelamin, no_telp, 
+                            email, pass, foto, staf, walas, barcode,
                          } = rombelData;
     
                         // Validasi input data
@@ -311,7 +299,7 @@ router.post('/add-guru', async (req, res) => {
                             resultMessages.push({
                                 nip,
                                 status: 'Gagal',
-                                message: `Data guru dengan ID ${id_guru} dan NIP ${nip} tidak ditemukan`,
+                                message: 'tidak ditemukan',
                             });
                             continue; // Lewati iterasi jika data tidak ditemukan
                         }
@@ -325,44 +313,37 @@ router.post('/add-guru', async (req, res) => {
                                 jenis_kelamin,
                                 no_telp,
                             });
+                            
     
                         // Update data di tabel detail_guru jika ada data detail
                         const existingDetailGuru = await trx('detail_guru')
                             .where({ id_guru })
                             .first();
     
-                        if (existingDetailGuru) {
+                        if (!existingDetailGuru) {
+                            resultMessages.push({
+                                nip,
+                                status: 'Gagal',
+                                message: 'tidak ditemukan',
+                            });
+                            continue;
                             // Jika data detail_guru ada, update
-                            await trx('detail_guru')
-                                .where({ id_guru })
-                                .update({
-                                    id_mapel: JSON.stringify(id_mapel),
-                                    id_kelas: Array.isArray(id_kelas) ? id_kelas.join(", ") : id_kelas,
-                                    id_rombel:JSON.stringify(id_rombel),
-                                    email, 
-                                    pass, 
-                                    foto, 
-                                    walas, 
-                                    barcode,
-                                });
-                        } else {
-                            // Jika data detail_guru tidak ada, buat entri baru
-                            const idAcak2 = generateRandomString(5);
-                            const detailData = {
-                                id_dg: idAcak2,
-                                id_guru: id_guru,
-                                id_mapel: Array.isArray(id_mapel) ? id_mapel.join(", ") : id_mapel,
-                                id_kelas: Array.isArray(id_kelas) ? id_kelas.join(", ") : id_kelas,
-                                id_rombel: Array.isArray(id_rombel) ? id_rombel.join(", ") : id_rombel,
-                                email, 
-                                pass, 
-                                foto, 
-                                walas, 
-                                barcode,
-                            };
-                            await trx('detail_guru').insert(detailData);
-                        }
-    
+                           
+                        } 
+                        // Update data di tabel detail_guru
+                        await trx('detail_guru')
+                        .where({ id_guru })
+                        .update({
+                            email, 
+                            pass, 
+                            foto, 
+                            staf,
+                            walas, 
+                            barcode,
+                        });
+
+
+                        
                         resultMessages.push({
                             nip,
                             status: 'Berhasil',
@@ -413,11 +394,18 @@ router.delete('/hapus-guru/:id', async (req, res)=>{
             })            
         }
         // hapus tahun pelajaran berdasarkan id
+        //di tabel guru
         await conn('guru')
         .where('id_guru', id_guru)
         .del();
 
+        //di tabel detail_guru
         await conn('detail_guru')
+        .where('id_guru', id_guru)
+        .del();
+
+        //di tabel detail_guru
+        await conn('mengampu')
         .where('id_guru', id_guru)
         .del();
 

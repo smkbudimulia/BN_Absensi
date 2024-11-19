@@ -74,6 +74,29 @@ function generateRandomString(length) {
       });
     }
   });
+
+  router.get('/all-setting', async (req, res)=>{
+    try {
+      
+        conn('setting')
+        .select('*')
+        .then((data)=>{
+          res.status(200).json({
+            Status: 200,
+            Message: "ok",
+            data: data,
+          })
+        })
+      
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({ 
+        Status: 500,
+        error: 'Internal Server Error' 
+      });   
+      
+    }
+  })
   
 
 
