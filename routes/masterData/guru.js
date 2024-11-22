@@ -225,12 +225,13 @@ router.post('/add-guru', async (req, res) => {
   router.get('/all-guru', async (req, res) => {
     try {
         const data = await conn('guru')
+        .select('*')
             .leftJoin('detail_guru', 'guru.id_guru', '=', 'detail_guru.id_guru')
-            .leftJoin('mengampu','guru.id_guru','=','mengampu.id_guru')
-            .select('*') // Mengambil semua kolom dari kedua tabel
-            .leftJoin('mapel', 'mengampu.id_mapel', 'mapel.id_mapel')
-            .leftJoin('kelas', 'mengampu.id_kelas', 'kelas.id_kelas')
-            .leftJoin('rombel_belajar', 'mengampu.id_rombel', 'rombel_belajar.id_rombel')
+            // .leftJoin('mengampu','guru.id_guru','=','mengampu.id_guru')
+            // // Mengambil semua kolom dari kedua tabel
+            // .leftJoin('mapel', 'mengampu.id_mapel', 'mapel.id_mapel')
+            // .leftJoin('kelas', 'mengampu.id_kelas', 'kelas.id_kelas')
+            // .leftJoin('rombel_belajar', 'mengampu.id_rombel', 'rombel_belajar.id_rombel')
         
         // Log data untuk debugging
         // console.log("Data dari Database:", data);
