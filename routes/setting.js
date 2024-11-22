@@ -18,85 +18,172 @@ function generateRandomString(length) {
     return randomString;
   }
 
-  router.post('/setting-sistem', async (req, res) => {
-    const { nama_instansi, logo, hari, jam_masuk, jam_pulang, jam_terlambat } = req.body;
-    const idAcak = generateRandomString(5);
-  
-    try {
-      // Check if there's existing data in the `setting` table
-      const existingData = await conn('setting').first(); // Fetches the first record if it exists
-  
-      if (existingData) {
-        // If data exists, perform an update
-        const updatedData = {
-          nama_instansi,
-          logo,
-          hari:JSON.stringify(hari) ,
-          jam_masuk: JSON.stringify(jam_masuk),
-          jam_pulang:JSON.stringify(jam_pulang),
-          jam_terlambat: JSON.stringify(jam_terlambat)
-        };
-  
-        await conn('setting').update(updatedData).where('id_setting', existingData.id_setting);
-  
-        res.status(200).json({
-          Status: 200,
-          success: true,
-          message: 'Data updated successfully',
-          data: updatedData
-        });
-      } else {
-        // If no data exists, insert a new record
-        const addData = {
-          id_setting: idAcak,
-          nama_instansi,
-          logo,
-          hari:JSON.stringify(hari) ,
-          jam_masuk: JSON.stringify(jam_masuk),
-          jam_pulang:JSON.stringify(jam_pulang),
-          jam_terlambat: JSON.stringify(jam_terlambat)
-        };
-  
-        await conn('setting').insert(addData);
-  
-        res.status(201).json({
-          Status: 201,
-          success: true,
-          message: 'Data inserted successfully',
-          data: addData
-        });
-      }
-    } catch (error) {
-      console.log(error);
-      res.status(500).json({
-        Status: 500,
-        error: 'Internal Server Error'
-      });
-    }
-  });
+  // router.post('/setting-sistem', async (req, res) => {
+  //   const settingArray = req.body
+  //   const resultMessages = []
 
-  router.get('/all-setting', async (req, res)=>{
-    try {
-      
-        conn('setting')
-        .select('*')
-        .then((data)=>{
-          res.status(200).json({
-            Status: 200,
-            Message: "ok",
-            data: data,
-          })
-        })
-      
-    } catch (error) {
-      console.log(error);
-      res.status(500).json({ 
-        Status: 500,
-        error: 'Internal Server Error' 
-      });   
-      
+  //   if (Array.isArray(settingArray) && settingArray.length > 0) {
+  //     try {
+  //       await conn.transaction(async trx =>{
+  //         for(const settingDataArray of settingArray){
+  //           const {hari, jam_masuk, jam_pulang,jam_terlambat}= settingDataArray
+
+  //           if (!hari) {
+  //             resultMessages.push({
+  //               hari,
+  //               status: 'Gagal',
+  //               message:' data tidak boleh kosong'
+  //             })
+  //             continue
+  //           }
+
+  //           const existingSetting = await trx('setting')
+  //           .where({hari})
+  //           .first()
+
+  //           if (!existingSetting) {
+  //             resultMessages.push({
+  //               hari,
+  //               status:'Gagal',
+  //               message:'Tidak ada data'
+  //             })
+  //             continue
+  //           }
+
+
+  //           const addData ={
+  //             hari, jam_masuk, jam_pulang,jam_terlambat
+
+  //           }
+  //           await trx('setting').insert(addData)
+
+  //           resultMessages.push({
+  //             nip,
+  //             status: 'Berhasil',
+  //             message: 'Data berhasil ditambahkan',
+  //         });
+
+  //         }
+  //       })
+  //       res.status(207).json({
+  //         Status: 207,
+  //         success: true,
+  //         results: resultMessages,
+  //     });
+  //     } catch (error) {
+  //       console.log(error);
+  //           res.status(500).json({
+  //               Status: 500,
+  //               error: error.message || 'Internal Server Error',
+  //           });
+  //     }
+  //   }
+
+  // });
+
+  router.post('/setting-sistem', async (req, res) => {
+    const rombelDataArray = req.body;
+    const resultMessages = [];
+
+    if (Array.isArray(rombelDataArray) && rombelDataArray.length > 0) {
+        try {
+            await conn.transaction(async trx => {
+                for (const rombelData of rombelDataArray) {
+                    const { hari, jam_masuk, jam_pulang,jam_terlambat} = rombelData;
+
+                    // Validasi input data
+                    if (!hari) {
+                        resultMessages.push({
+                          hari,
+                            status: 'Gagal',
+                            message: 'Data tidak boleh kosong',
+                        });
+                        continue; // Lewati iterasi jika data tidak valid
+                    }
+
+                    // Cek duplikasi data
+                    const existingGuru = await trx('setting')
+                        .where('hari', hari)
+                        .first();
+
+                    if (existingGuru) {
+                        resultMessages.push({
+                            status: 'Gagal',
+                            message: `Data guru dengan NIP sudah ada`,
+                        });
+                        continue; // Lewati iterasi jika data sudah ada
+                    }
+
+                    // ID acak per iterasi
+                    const idAcak = generateRandomString(5);
+                    const addData = {
+                      id_setting:idAcak,
+                      hari, 
+                      jam_masuk: JSON.stringify(jam_masuk), 
+                      jam_pulang:JSON.stringify(jam_pulang),
+                      jam_terlambat:JSON.stringify(jam_terlambat)
+                    };
+
+                    // Insert data ke tabel guru
+                    await trx('setting').insert(addData);
+
+                                                           
+                    resultMessages.push({
+                        hari,
+                        status: 'Berhasil',
+                        message: 'Data berhasil ditambahkan',
+                    });
+                }
+            });
+
+            res.status(207).json({
+                Status: 207,
+                success: true,
+                results: resultMessages,
+            });
+
+        } catch (error) {
+            console.log(error);
+            res.status(500).json({
+                Status: 500,
+                error: error.message || 'Internal Server Error',
+            });
+        }
+
+    } else {
+        res.status(400).json({
+            Status: 400,
+            success: false,
+            message: 'Data tidak valid atau kosong',
+        });
     }
-  })
+});
+
+router.get('/all-setting', async (req, res) => {
+  try {
+      const data = await conn('setting').select('*');
+
+      // Format `jam_masuk` untuk setiap item
+      const formattedData = data.map(item => {
+          const jamMasukArray = JSON.parse(item.jam_masuk); // Parsing string JSON jika disimpan sebagai teks
+          item.jam_masuk = `"${jamMasukArray.join('","')}"`; // Format menjadi "07:00","07:17"
+          return item;
+      });
+
+      res.status(200).json({
+          Status: 200,
+          Message: "ok",
+          data: formattedData,
+      });
+  } catch (error) {
+      console.error(error);
+      res.status(500).json({
+          Status: 500,
+          error: 'Internal Server Error'
+      });
+  }
+});
+
   
 
 
