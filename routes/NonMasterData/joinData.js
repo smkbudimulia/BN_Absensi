@@ -32,11 +32,15 @@ router.get('/total-kelas-siswa', async (req, res) => {
             kelas: `${item.kelas} ${item.nama_rombel}` // Menggabungkan nama kelas dan nama rombel
         }));
 
+        // Menghitung total semua siswa
+        const totalSemuaSiswa = result.reduce((total, item) => total + item.total_siswa, 0);
+
         if (data && data.length > 0) {
             res.status(200).json({
                 Status: 200,
                 message: "ok",
                 Guru: guruData,
+                totalSemuaSiswa, // Menambahkan total semua siswa
                 data: result,
 
             });

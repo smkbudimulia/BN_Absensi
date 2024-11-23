@@ -323,10 +323,10 @@ router.get('/all-Siswa',  (req, res) => {
                                 .where({ id_siswa })
                                 .update({
                                   
-                                    email, 
-                                    pass, 
-                                    foto,
-                                    barcode,
+                                    email: email || existingDetailSiswa.email, // Hanya update jika ada data baru
+                                    pass: pass || existingDetailSiswa.pass,
+                                    foto: foto || existingDetailSiswa.foto,
+                                    barcode: barcode || existingDetailSiswa.barcode,
                                 });
                         } else {
                             // Jika data detail_guru tidak ada, buat entri baru
@@ -393,6 +393,11 @@ router.delete('/hapus-siswa/:id', async (req, res)=>{
         await conn('siswa')
         .where('id_siswa', id_siswa)
         .del();
+
+        await conn('detail_siswa')
+        .where('id_siswa', id_siswa)
+        .del();
+
 
         res.status(200).json({
             Status: 200,

@@ -101,62 +101,69 @@ function generateRandomString(length) {
                         continue; // Lewati iterasi jika data tidak valid
                     }
 
-                    // Cek duplikasi data
-                    const existingGuru = await trx('setting')
-                        .where('hari', hari)
-                        .first();
+                    // Cek apakah data sudah ada di database
+          const existingData = await trx('setting')
+          .where('hari', hari)
+          .first();
 
-                    if (existingGuru) {
-                        resultMessages.push({
-                            status: 'Gagal',
-                            message: `Data guru dengan NIP sudah ada`,
-                        });
-                        continue; // Lewati iterasi jika data sudah ada
-                    }
-
-                    // ID acak per iterasi
-                    const idAcak = generateRandomString(5);
-                    const addData = {
-                      id_setting:idAcak,
-                      hari, 
-                      jam_masuk: JSON.stringify(jam_masuk), 
-                      jam_pulang:JSON.stringify(jam_pulang),
-                      jam_terlambat:JSON.stringify(jam_terlambat)
-                    };
-
-                    // Insert data ke tabel guru
-                    await trx('setting').insert(addData);
-
-                                                           
-                    resultMessages.push({
-                        hari,
-                        status: 'Berhasil',
-                        message: 'Data berhasil ditambahkan',
-                    });
-                }
+        if (existingData) {
+          // Jika data sudah ada, update data yang ada
+          await trx('setting')
+            .where('hari', hari)
+            .update({
+              jam_masuk: JSON.stringify(jam_masuk),
+              jam_pulang: JSON.stringify(jam_pulang),
+              jam_terlambat: JSON.stringify(jam_terlambat),
             });
 
-            res.status(207).json({
-                Status: 207,
-                success: true,
-                results: resultMessages,
-            });
+          resultMessages.push({
+            hari,
+            status: 'Berhasil',
+            message: 'Data berhasil diperbarui',
+          });
+        } else {
+          // Jika data belum ada, insert data baru
+          const idAcak = generateRandomString(5);
+          const addData = {
+            id_setting: idAcak,
+            hari,
+            jam_masuk: JSON.stringify(jam_masuk),
+            jam_pulang: JSON.stringify(jam_pulang),
+            jam_terlambat: JSON.stringify(jam_terlambat),
+          };
 
-        } catch (error) {
-            console.log(error);
-            res.status(500).json({
-                Status: 500,
-                error: error.message || 'Internal Server Error',
-            });
+          await trx('setting').insert(addData);
+
+          resultMessages.push({
+            hari,
+            status: 'Berhasil',
+            message: 'Data berhasil ditambahkan',
+          });
         }
+      }
+    });
 
-    } else {
-        res.status(400).json({
-            Status: 400,
-            success: false,
-            message: 'Data tidak valid atau kosong',
-        });
-    }
+    res.status(207).json({
+      Status: 207,
+      success: true,
+      results: resultMessages,
+    });
+
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      Status: 500,
+      error: error.message || 'Internal Server Error',
+    });
+  }
+
+} else {
+  res.status(400).json({
+    Status: 400,
+    success: false,
+    message: 'Data tidak valid atau kosong',
+  });
+}
 });
 
 router.get('/all-setting', async (req, res) => {
@@ -166,7 +173,13 @@ router.get('/all-setting', async (req, res) => {
       // Format `jam_masuk` untuk setiap item
       const formattedData = data.map(item => {
           const jamMasukArray = JSON.parse(item.jam_masuk); // Parsing string JSON jika disimpan sebagai teks
-          item.jam_masuk = `"${jamMasukArray.join('","')}"`; // Format menjadi "07:00","07:17"
+          const jamPulangArray = JSON.parse(item.jam_pulang);
+          const jamTerlambatArray = JSON.parse(item.jam_terlambat);
+
+          item.jam_masuk = `"${jamMasukArray.join('","')}"`;
+          item.jam_pulang = `"${jamPulangArray.join('","')}"`;
+          item.jam_terlambat = `"${jamTerlambatArray.join('","')}"`;
+          // Format menjadi "07:00","07:17"
           return item;
       });
 
