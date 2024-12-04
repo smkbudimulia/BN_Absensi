@@ -25,6 +25,9 @@ const EPNaikKelas = require('./routes/NonMasterData/naikkelas')
 // Setting
 const EPSetting = require('./routes/setting')
 
+//Absensi
+const EPAbsensi = require('./routes/absensiSiswa/absensiSiswa')
+
 
 
 
@@ -66,6 +69,9 @@ app.use('/naik', EPNaikKelas)
 
 //Setting
 app.use('/setting', EPSetting)
+
+//Absensi
+app.use('/absensi', EPAbsensi)
 
 app.listen(PORT, ()=>{
     console.log(`brtjalan di PORT http://localhost:${PORT}`)
