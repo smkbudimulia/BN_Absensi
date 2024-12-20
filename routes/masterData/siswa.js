@@ -148,7 +148,7 @@ router.post('/add-siswa', async (req, res) => {
         try {
             await conn.transaction(async trx => {
                 for (const siswaData of siswaDataArray) {
-                    const {  id_admin, nis,nama_siswa,jenis_kelamin, id_tahun_pelajaran,id_kelas,id_rombel,nama_wali,nomor_wali, email, pass, foto, barcode, } = siswaData;
+                    const {  id_siswa, id_admin, nis,nama_siswa,jenis_kelamin, id_tahun_pelajaran,id_kelas,id_rombel,nama_wali,nomor_wali, email, pass, foto, barcode, } = siswaData;
 
                     // Validasi input data
                     if (!nis || !nama_siswa || !jenis_kelamin ) {
@@ -174,9 +174,9 @@ router.post('/add-siswa', async (req, res) => {
                     }
 
                     // ID acak per iterasi
-                    const idAcak = generateRandomString(5);
+                    // const idAcak = generateRandomString(5);
                     const addData = {
-                        id_siswa: idAcak,
+                        id_siswa,
                         id_admin, 
                         nis,
                         nama_siswa,
@@ -195,7 +195,7 @@ router.post('/add-siswa', async (req, res) => {
                     const idAcak2 = generateRandomString(5);
                     const detailData = {
                         id_ds: idAcak2,
-                        id_siswa: idAcak,
+                        id_siswa,
                         email, 
                         pass, 
                         foto,
