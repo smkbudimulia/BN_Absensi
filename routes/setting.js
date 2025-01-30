@@ -18,168 +18,229 @@ function generateRandomString(length) {
     return randomString;
   }
 
-  // router.post('/setting-sistem', async (req, res) => {
-  //   const settingArray = req.body
-  //   const resultMessages = []
 
-  //   if (Array.isArray(settingArray) && settingArray.length > 0) {
-  //     try {
-  //       await conn.transaction(async trx =>{
-  //         for(const settingDataArray of settingArray){
-  //           const {hari, jam_masuk, jam_pulang,jam_terlambat}= settingDataArray
+// router.post('/setting-sistem', async (req, res) => {
+//   const rombelDataArray = req.body;
+//   const resultMessages = [];
 
-  //           if (!hari) {
-  //             resultMessages.push({
-  //               hari,
-  //               status: 'Gagal',
-  //               message:' data tidak boleh kosong'
-  //             })
-  //             continue
-  //           }
+//   if (Array.isArray(rombelDataArray) && rombelDataArray.length > 0) {
+//     try {
+//       await conn.transaction(async trx => {
+//         for (const rombelData of rombelDataArray) {
+//           const { hari, jam_masuk, jam_pulang, jam_terlambat } = rombelData;
 
-  //           const existingSetting = await trx('setting')
-  //           .where({hari})
-  //           .first()
+//           if (!hari) {
+//             resultMessages.push({
+//               hari,
+//               status: 'Gagal',
+//               message: 'Hari tidak boleh kosong',
+//             });
+//             continue; // Lewati iterasi jika hari tidak diisi
+//           }
 
-  //           if (!existingSetting) {
-  //             resultMessages.push({
-  //               hari,
-  //               status:'Gagal',
-  //               message:'Tidak ada data'
-  //             })
-  //             continue
-  //           }
+//           // Cek apakah data sudah ada di database
+//           const existingData = await trx('setting')
+//             .where('hari', hari)
+//             .first();
 
+//           if (existingData) {
+//             // Jika data sudah ada, update data
+//             await trx('setting')
+//               .where('hari', hari)
+//               .update({
+//                 jam_masuk: jam_masuk ? JSON.stringify(jam_masuk) : null,
+//                 jam_pulang: jam_pulang ? JSON.stringify(jam_pulang) : null,
+//                 jam_terlambat: jam_terlambat ? JSON.stringify(jam_terlambat) : null,
+//               });
 
-  //           const addData ={
-  //             hari, jam_masuk, jam_pulang,jam_terlambat
+//             const statusMessage =
+//               !jam_masuk && !jam_pulang && !jam_terlambat
+//                 ? 'Data berhasil diperbarui sebagai hari libur'
+//                 : 'Data berhasil diperbarui';
 
-  //           }
-  //           await trx('setting').insert(addData)
+//             resultMessages.push({
+//               hari,
+//               status: 'Berhasil',
+//               message: statusMessage,
+//             });
+//           } else {
+//             // Jika data belum ada, tambahkan data baru
+//             const idAcak = generateRandomString(5);
+//             const addData = {
+//               id_setting: idAcak,
+//               hari,
+//               jam_masuk: jam_masuk ? JSON.stringify(jam_masuk) : null,
+//               jam_pulang: jam_pulang ? JSON.stringify(jam_pulang) : null,
+//               jam_terlambat: jam_terlambat ? JSON.stringify(jam_terlambat) : null,
+//             };
 
-  //           resultMessages.push({
-  //             nip,
-  //             status: 'Berhasil',
-  //             message: 'Data berhasil ditambahkan',
-  //         });
+//             await trx('setting').insert(addData);
 
-  //         }
-  //       })
-  //       res.status(207).json({
-  //         Status: 207,
-  //         success: true,
-  //         results: resultMessages,
-  //     });
-  //     } catch (error) {
-  //       console.log(error);
-  //           res.status(500).json({
-  //               Status: 500,
-  //               error: error.message || 'Internal Server Error',
-  //           });
-  //     }
-  //   }
+//             const statusMessage =
+//               !jam_masuk && !jam_pulang && !jam_terlambat
+//                 ? 'Data berhasil ditambahkan sebagai hari libur'
+//                 : 'Data berhasil ditambahkan';
 
-  // });
+//             resultMessages.push({
+//               hari,
+//               status: 'Berhasil',
+//               message: statusMessage,
+//             });
+//           }
+//         }
+//       });
 
-  router.post('/setting-sistem', async (req, res) => {
-    const rombelDataArray = req.body;
-    const resultMessages = [];
+//       res.status(207).json({
+//         Status: 207,
+//         success: true,
+//         results: resultMessages,
+//       });
+//     } catch (error) {
+//       console.log(error);
+//       res.status(500).json({
+//         Status: 500,
+//         error: error.message || 'Internal Server Error',
+//       });
+//     }
+//   } else {
+//     res.status(400).json({
+//       Status: 400,
+//       success: false,
+//       message: 'Data tidak valid atau kosong',
+//     });
+//   }
+// });
 
-    if (Array.isArray(rombelDataArray) && rombelDataArray.length > 0) {
-        try {
-            await conn.transaction(async trx => {
-                for (const rombelData of rombelDataArray) {
-                    const { hari, jam_masuk, jam_pulang,jam_terlambat} = rombelData;
+router.post('/setting-sistem', async (req, res) => {
+  const rombelDataArray = req.body;
+  const resultMessages = [];
 
-                    // Validasi input data
-                    if (!hari) {
-                        resultMessages.push({
-                          hari,
-                            status: 'Gagal',
-                            message: 'Data tidak boleh kosong',
-                        });
-                        continue; // Lewati iterasi jika data tidak valid
-                    }
+  if (Array.isArray(rombelDataArray) && rombelDataArray.length > 0) {
+    try {
+      await conn.transaction(async trx => {
+        for (const rombelData of rombelDataArray) {
+          const { hari, jam_masuk, jam_pulang, jam_terlambat } = rombelData;
 
-                    // Cek apakah data sudah ada di database
-          const existingData = await trx('setting')
-          .where('hari', hari)
-          .first();
-
-        if (existingData) {
-          // Jika data sudah ada, update data yang ada
-          await trx('setting')
-            .where('hari', hari)
-            .update({
-              jam_masuk: JSON.stringify(jam_masuk),
-              jam_pulang: JSON.stringify(jam_pulang),
-              jam_terlambat: JSON.stringify(jam_terlambat),
+          if (!hari) {
+            resultMessages.push({
+              hari,
+              status: 'Gagal',
+              message: 'Hari tidak boleh kosong',
             });
+            continue; // Lewati iterasi jika hari tidak diisi
+          }
 
-          resultMessages.push({
-            hari,
-            status: 'Berhasil',
-            message: 'Data berhasil diperbarui',
-          });
-        } else {
-          // Jika data belum ada, insert data baru
-          const idAcak = generateRandomString(5);
-          const addData = {
-            id_setting: idAcak,
-            hari,
-            jam_masuk: JSON.stringify(jam_masuk),
-            jam_pulang: JSON.stringify(jam_pulang),
-            jam_terlambat: JSON.stringify(jam_terlambat),
-          };
+          // Cek jika hanya hari yang diisi tanpa data jam lainnya
+          const isLibur = (!jam_masuk || jam_masuk.every(time => time === "")) &&
+                          (!jam_pulang || jam_pulang.every(time => time === "")) &&
+                          (!jam_terlambat || jam_terlambat.every(time => time === ""));
 
-          await trx('setting').insert(addData);
+          // Jika hari libur, set "libur" pada jam_masuk, jam_pulang, dan jam_terlambat
+          const newJamMasuk = isLibur ? ["libur", "libur"] : jam_masuk;
+          const newJamPulang = isLibur ? ["libur", "libur"] : jam_pulang;
+          const newJamTerlambat = isLibur ? ["libur", "libur"] : jam_terlambat;
 
-          resultMessages.push({
-            hari,
-            status: 'Berhasil',
-            message: 'Data berhasil ditambahkan',
-          });
+          const statusMessage = isLibur
+            ? 'Data berhasil diperbarui sebagai hari libur'
+            : 'Data berhasil diperbarui';
+
+          // Cek apakah data sudah ada di database
+          const existingData = await trx('setting')
+            .where('hari', hari)
+            .first();
+
+          if (existingData) {
+            // Jika data sudah ada, update data
+            await trx('setting')
+              .where('hari', hari)
+              .update({
+                jam_masuk: JSON.stringify(newJamMasuk),
+                jam_pulang: JSON.stringify(newJamPulang),
+                jam_terlambat: JSON.stringify(newJamTerlambat),
+              });
+
+            resultMessages.push({
+              hari,
+              status: 'Berhasil',
+              message: statusMessage,
+            });
+          } else {
+            // Jika data belum ada, tambahkan data baru
+            const idAcak = generateRandomString(5);
+            const addData = {
+              id_setting: idAcak,
+              hari,
+              jam_masuk: JSON.stringify(newJamMasuk),
+              jam_pulang: JSON.stringify(newJamPulang),
+              jam_terlambat: JSON.stringify(newJamTerlambat),
+            };
+
+            await trx('setting').insert(addData);
+
+            resultMessages.push({
+              hari,
+              status: 'Berhasil',
+              message: statusMessage,
+            });
+          }
         }
-      }
-    });
+      });
 
-    res.status(207).json({
-      Status: 207,
-      success: true,
-      results: resultMessages,
-    });
-
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({
-      Status: 500,
-      error: error.message || 'Internal Server Error',
+      res.status(207).json({
+        Status: 207,
+        success: true,
+        results: resultMessages,
+      });
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({
+        Status: 500,
+        error: error.message || 'Internal Server Error',
+      });
+    }
+  } else {
+    res.status(400).json({
+      Status: 400,
+      success: false,
+      message: 'Data tidak valid atau kosong',
     });
   }
-
-} else {
-  res.status(400).json({
-    Status: 400,
-    success: false,
-    message: 'Data tidak valid atau kosong',
-  });
-}
 });
 
 router.get('/all-setting', async (req, res) => {
   try {
       const data = await conn('setting').select('*');
 
+      let liburDays = [];
+
+      if (Array.isArray(data)) {
+        liburDays = data
+          .filter(item => {
+            const jamMasukArray = JSON.parse(item.jam_masuk || '[]');
+            const jamPulangArray = JSON.parse(item.jam_pulang || '[]');
+            const jamTerlambatArray = JSON.parse(item.jam_terlambat || '[]');
+
+            // Memeriksa apakah jam_masuk, jam_pulang, dan jam_terlambat semua berisi "libur"
+            const isLibur = jamMasukArray.every(time => time === "libur") &&
+                            jamPulangArray.every(time => time === "libur") &&
+                            jamTerlambatArray.every(time => time === "libur");
+
+            return isLibur; // Jika semuanya "libur", maka hari tersebut adalah libur
+          })
+          .map(item => item.hari); // Ambil hanya nama hari dari data yang libur
+      }
+  
+      console.log('Hari Libur dari Database:', liburDays);
+
       // Format `jam_masuk` untuk setiap item
       const formattedData = data.map(item => {
-          const jamMasukArray = JSON.parse(item.jam_masuk); // Parsing string JSON jika disimpan sebagai teks
-          const jamPulangArray = JSON.parse(item.jam_pulang);
-          const jamTerlambatArray = JSON.parse(item.jam_terlambat);
+          const jamMasukArray = JSON.parse(item.jam_masuk || '[]'); // Parsing string JSON jika disimpan sebagai teks
+          const jamPulangArray = JSON.parse(item.jam_pulang || '[]');
+          const jamTerlambatArray = JSON.parse(item.jam_terlambat || '[]');
 
           item.jam_masuk = `"${jamMasukArray.join('","')}"`;
           item.jam_pulang = `"${jamPulangArray.join('","')}"`;
           item.jam_terlambat = `"${jamTerlambatArray.join('","')}"`;
-          // Format menjadi "07:00","07:17"
           return item;
       });
 
@@ -187,6 +248,7 @@ router.get('/all-setting', async (req, res) => {
           Status: 200,
           Message: "ok",
           data: formattedData,
+          liburDays, // Mengembalikan daftar hari libur
       });
   } catch (error) {
       console.error(error);
@@ -196,6 +258,47 @@ router.get('/all-setting', async (req, res) => {
       });
   }
 });
+
+// router.get('/all-setting', async (req, res) => {
+//   try {
+//       const data = await conn('setting').select('*');
+
+//       let liburDays = [];
+
+//       if (Array.isArray(data)) {
+//         liburDays = data
+//           .filter(item => !item.jam_masuk && !item.jam_pulang) // Hanya hari libur
+//           .map(item => item.hari); // Ambil hanya nama harinya
+//       }
+  
+//       console.log(' Hari Libur dari Database:', liburDays);
+
+//       // Format `jam_masuk` untuk setiap item
+//       const formattedData = data.map(item => {
+//           const jamMasukArray = JSON.parse(item.jam_masuk || '[]'); // Parsing string JSON jika disimpan sebagai teks
+//           const jamPulangArray = JSON.parse(item.jam_pulang || '[]');
+//           const jamTerlambatArray = JSON.parse(item.jam_terlambat || '[]');
+
+//           item.jam_masuk = `"${jamMasukArray.join('","')}"`;
+//           item.jam_pulang = `"${jamPulangArray.join('","')}"`;
+//           item.jam_terlambat = `"${jamTerlambatArray.join('","')}"`;
+//           return item;
+//       });
+
+//       res.status(200).json({
+//           Status: 200,
+//           Message: "ok",
+//           data: formattedData,
+//           liburDays, // Mengembalikan daftar hari libur
+//       });
+//   } catch (error) {
+//       console.error(error);
+//       res.status(500).json({
+//           Status: 500,
+//           error: 'Internal Server Error'
+//       });
+//   }
+// });
 
   
 

@@ -14,143 +14,6 @@ function generateRandomString(length) {
     }
     return randomString;
 }
-
-// Route untuk absensi siswa
-// router.post('/siswa-abseni', async (req, res) => {
-//     try {
-//         const { id_siswa } = req.body;
-
-//         if (!id_siswa) {
-//             return res.status(400).json({ message: 'ID siswa wajib diisi.' });
-//         }
-
-//         // Ambil nama siswa berdasarkan ID siswa
-//         const siswa = await conn('siswa')
-//             .select('nama_siswa')
-//             .where({ id_siswa })
-//             .first();
-
-//         if (!siswa) {
-//             return res.status(404).json({ message: 'Siswa tidak ditemukan.' });
-//         }
-
-//         let nama_siswa = siswa.nama_siswa;
-
-//         // Cek apakah nama siswa memiliki lebih dari satu kata
-//         const namaArray = nama_siswa.split(' ');
-
-//         // Ambil kata kedua jika ada lebih dari satu kata
-//         if (namaArray.length > 1) {
-//             nama_siswa = namaArray[1];
-//         } else {
-//             nama_siswa = namaArray[0];  // Jika hanya ada satu kata, tetap gunakan nama lengkap
-//         }
-
-//         const currentTime = moment(); // Waktu sekarang
-//         const currentDate = currentTime.format("YYYY-MM-DD"); // Tanggal saat ini
-//         const hariSekarang = moment().locale('id').format('dddd'); // Hari saat ini
-
-//         // Ambil aturan dari tabel setting berdasarkan hari saat ini
-//         const settings = await conn('setting').where({ hari: hariSekarang }).first();
-
-//         if (!settings) {
-//             return res.status(400).json({
-//                 message:` Aturan untuk hari ${hariSekarang} tidak ditemukan. Silakan tambahkan pengaturan terlebih dahulu.`,
-//             });
-//         }
-
-//         // Parsing aturan waktu dari database
-//         const jamMasukArray = JSON.parse(settings.jam_masuk || '[]');
-//         const jamTerlambatArray = JSON.parse(settings.jam_terlambat || '[]');
-//         const jamPulangArray = JSON.parse(settings.jam_pulang || '[]');
-
-//         if (jamMasukArray.length < 2 || jamTerlambatArray.length < 2 || jamPulangArray.length < 2) {
-//             return res.status(400).json({
-//                 message: 'Format jam masuk, terlambat, atau pulang tidak valid.',
-//             });
-//         }
-
-//         const [jamMasukAwal, jamMasukAkhir] = jamMasukArray;
-//         const [jamTerlambatAwal, jamTerlambatAkhir] = jamTerlambatArray;
-//         const [jamPulangAwal, jamPulangAkhir] = jamPulangArray;
-
-//         // Ambil data absensi siswa untuk hari ini
-//         const absensiHariIni = await conn('absensi')
-//             .where({ id_siswa, tanggal: currentDate })
-//             .first();
-
-//         let keterangan = '';
-//         let waktuDatang = null;
-//         let waktuPulang = null;
-
-//         // Jika tidak ada catatan absensi sebelumnya
-//         if (!absensiHariIni) {
-//             // Cek apakah siswa hadir dalam kategori jam masuk, terlambat, atau alpa
-//             if (currentTime.isBetween(moment(jamMasukAwal, "HH:mm"), moment(jamMasukAkhir, "HH:mm"), null, '[)')) {
-//                 keterangan = 'Datang';
-//                 waktuDatang = currentTime.format("HH:mm");
-//             } else if (currentTime.isBetween(moment(jamTerlambatAwal, "HH:mm"), moment(jamTerlambatAkhir, "HH:mm"), null, '[)')) {
-//                 keterangan = 'Terlambat';
-//                 waktuDatang = currentTime.format("HH:mm");
-//             } else if (currentTime.isBetween(moment(jamTerlambatAkhir, "HH:mm"), moment(jamPulangAwal, "HH:mm"), null, '[)')) {
-//                 keterangan = 'Alpa';
-//                 waktuDatang = currentTime.format("HH:mm"); // Gunakan waktu saat ini jika status "Alpa"
-//             } else {
-//                 // Jika sudah melewati jam pulang, atau jika belum ada absensi sama sekali
-//                 if (currentTime.isAfter(moment(jamPulangAkhir, "HH:mm"))) {
-//                     keterangan = 'Alpa'; // Status menjadi Alpa jika sudah melewati jam pulang
-//                     waktuDatang = currentTime.format("HH:mm");
-//                 } else {
-//                     return res.status(400).json({ message: 'Anda tidak hadir pada waktu yang valid.' });
-//                 }
-//             }
-
-//             // Simpan data absensi datang
-//             const idAcak = generateRandomString(5); // Buat ID unik
-//             const dataAbsensi = {
-//                 id_absen: idAcak,
-//                 id_siswa,
-//                 datang: waktuDatang,
-//                 keterangan,
-//                 tanggal: currentDate,
-//             };
-
-//             await conn('absensi').insert(dataAbsensi);
-//             return res.status(201).json({ message: ` ${nama_siswa} Hadir`, data: dataAbsensi });
-//         }
-
-//         // Jika ada catatan datang sebelumnya, perbarui dengan waktu pulang
-//         if (absensiHariIni.datang) {
-//             // Pastikan waktu pulang valid (dalam rentang jam pulang yang telah ditentukan)
-//             if (currentTime.isBetween(moment(jamPulangAwal, "HH:mm"), moment(jamPulangAkhir, "HH:mm"), null, '[)')) {
-//                 waktuPulang = currentTime.format("HH:mm");
-
-//                 // Update data absensi dengan waktu pulang
-//                 await conn('absensi')
-//                     .where({ id_siswa, tanggal: currentDate })
-//                     .update({ pulang: waktuPulang });
-
-//                 // Ambil data lengkap setelah diperbarui
-//                 const dataTerbaru = await conn('absensi')
-//                     .where({ id_siswa, tanggal: currentDate })
-//                     .first();
-
-//                 return res.status(200).json({
-//                     message: ` ${nama_siswa} pulang`,
-//                     data: dataTerbaru,
-//                 });
-//             } else {
-//                 return res.status(400).json({ message: 'Belum waktu pulang yang valid.' });
-//             }
-//         }
-
-//         return res.status(400).json({ message: 'Terjadi kesalahan yang tidak terduga.' });
-//     } catch (error) {
-//         console.error(error);
-//         res.status(500).json({ message: 'Terjadi kesalahan pada server.', error });
-//     }
-// });
-
 router.post('/siswa-abseni', async (req, res) => {
     try {
         const { id_siswa } = req.body;
@@ -229,35 +92,35 @@ router.post('/siswa-abseni', async (req, res) => {
 
         // Jika tidak ada catatan absensi sebelumnya
         if (!absensiHariIni) {
-            // Validasi tambahan jika mencoba absen di jam pulang tanpa absen datang
-            if (currentTime.isBetween(moment(jamPulangAwal, "HH:mm"), moment(jamPulangAkhir, "HH:mm"), null, '[]')) {
-                // Catat siswa sebagai Alpa
-                const idAcak = generateRandomString(5);
-                const dataAbsensi = {
-                    id_absen: idAcak,
-                    id_siswa,
-                    keterangan: 'Alpa',
-                    tanggal: currentDate,
-                    datang:"", // Tidak ada waktu datang
-                    pulang:"", // Tidak ada waktu pulang
-                };
-        
-                await conn('absensi').insert(dataAbsensi);
-        
-                return res.status(400).json({
-                    message: 'Kamu belum absen datang dan tercatat sebagai Alpa.',
-                    data: dataAbsensi,
+
+             // Validasi jika mencoba absen setelah jam pulang
+             if (currentTime.isAfter(moment(jamPulangAkhir, "HH:mm"))) {
+                return res.status(200).json({
+                    message: 'Maaf, Pembelajaran hari ini telah selesai :).',
                 });
             }
+
+            // Validasi tambahan jika mencoba absen di luar jam yang ditentukan
+            if (!currentTime.isBetween(moment(jamMasukAwal, "HH:mm"), moment(jamTerlambatAkhir, "HH:mm"), null, '[]')) {
+                return res.status(400).json({
+                    message: 'Kamu absen di luar jam yang ditentukan.',
+                });
+            }
+
+            if (currentTime.isBetween(moment(jamTerlambatAkhir, "HH:mm"), moment(jamPulangAwal, "HH:mm"), null, '[]')) {
+                return res.status(400).json({
+                    message: 'Kamu absen di luar jam yang ditentukan.',
+                });
+            }
+
+           
+
             if (currentTime.isBetween(moment(jamMasukAwal, "HH:mm"), moment(jamTerlambatAwal, "HH:mm"), null, '[]')) {
                 keterangan = 'Datang';
                 waktuDatang = currentTime.format("HH:mm");
-            } else if (currentTime.isBetween(moment(jamTerlambatAwal, "HH:mm"), moment(jamPulangAwal, "HH:mm"), null, '[]')) {
+            } else if (currentTime.isBetween(moment(jamTerlambatAwal, "HH:mm"), moment(jamTerlambatAkhir, "HH:mm"), null, '[]')) {
                 keterangan = 'Terlambat';
                 waktuDatang = currentTime.format("HH:mm");
-            // } else if (currentTime.isBetween(moment(jamTerlambatAkhir, "HH:mm"), moment(jamPulangAwal, "HH:mm"), null, '[)')) {
-            //     keterangan = 'Alpa';
-            //     waktuDatang = currentTime.format("HH:mm");
             } else {
                 if (currentTime.isAfter(moment(jamPulangAkhir, "HH:mm"))) {
                     return res.status(200).json({
@@ -272,7 +135,7 @@ router.post('/siswa-abseni', async (req, res) => {
                 id_siswa,
                 keterangan,  
                 tanggal: currentDate,
-                datang: currentDate,
+                datang: waktuDatang,
             };
 
             await conn('absensi').insert(dataAbsensi);
@@ -549,6 +412,90 @@ router.post('/add-siswa-absensi-izin', async (req, res) => {
     }
 });
 
+router.get('/all-siswa-absensi-izin', async (req, res) => {
+    try {
+        // Ambil semua data absensi dengan keterangan "Sakit"
+        const absensiIzin = await conn('absensi')
+            .where({ keterangan: 'Izin' })
+            .select('id_absen', 'id_siswa', 'tanggal', 'keterangan');
+
+        // Periksa apakah ada data yang ditemukan
+        if (absensiIzin.length === 0) {
+            return res.status(404).json({ message: 'Tidak ada data absensi dengan status "Izin".' });
+        }
+
+        return res.status(200).json({ 
+            message: 'Data absensi dengan status "Izin" berhasil diambil.', 
+            data: absensiIzin 
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Terjadi kesalahan pada server.', error });
+    }
+});
+
+router.post('/add-siswa-absensi-alpa', async (req, res) => {
+    try {
+        const { id_siswa, keterangan } = req.body;
+
+        if (!id_siswa) {
+            return res.status(400).json({ message: 'ID siswa wajib diisi.' });
+        }
+
+        if (keterangan !== 'Alpa') {
+            return res.status(400).json({ message: 'Keterangan harus "Alpa".' });
+        }
+
+        const currentTime = moment(); // Waktu sekarang
+        const currentDate = currentTime.format("YYYY-MM-DD"); // Tanggal saat ini
+
+        // Ambil data absensi siswa untuk hari ini
+        const absensiHariIni = await conn('absensi')
+            .where({ id_siswa, tanggal: currentDate })
+            .first();
+
+        // Jika tidak ada catatan absensi sebelumnya, catat "Izin"
+        if (!absensiHariIni) {
+            const idAcak = generateRandomString(5); // Buat ID unik
+            const dataAbsensi = {
+                id_absen: idAcak,
+                id_siswa,
+                keterangan: "Alpa",  // Status "Izin"
+                tanggal: currentDate,
+                datang: currentDate,
+            };
+
+            await conn('absensi').insert(dataAbsensi);
+            return res.status(201).json({ message: 'Absensi izin berhasil dicatat', data: dataAbsensi });
+        } else {
+            return res.status(400).json({ message: 'Absensi sudah tercatat untuk hari ini.' });
+        }
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Terjadi kesalahan pada server.', error });
+    }
+});
+router.get('/all-siswa-absensi-alpa', async (req, res) => {
+    try {
+        // Ambil semua data absensi dengan keterangan "Sakit"
+        const absensiAlpa = await conn('absensi')
+            .where({ keterangan: 'Alpa' })
+            .select('id_absen', 'id_siswa', 'tanggal', 'keterangan');
+
+        // Periksa apakah ada data yang ditemukan
+        if (absensiAlpa.length === 0) {
+            return res.status(404).json({ message: 'Tidak ada data absensi dengan status "Alpa".' });
+        }
+
+        return res.status(200).json({ 
+            message: 'Data absensi dengan status "Alpa" berhasil diambil.', 
+            data: absensiAlpa 
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Terjadi kesalahan pada server.', error });
+    }
+});
 
 // router untuk mengatasi sakit di halaman utama
 // Rute yang benar adalah '/sakit'
