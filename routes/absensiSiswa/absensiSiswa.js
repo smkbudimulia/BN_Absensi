@@ -197,7 +197,8 @@ router.get('/all-absensi', async (req, res) => {
                 'siswa.id_siswa',
                 'siswa.nama_siswa',
                 'kelas.kelas',
-                'rombel_belajar.nama_rombel'
+                'rombel_belajar.nama_rombel',
+                'absensi.pulang',
             )
             .leftJoin('siswa', 'absensi.id_siswa', 'siswa.id_siswa')
             .leftJoin('kelas', 'siswa.id_kelas', 'kelas.id_kelas')
@@ -221,6 +222,7 @@ router.get('/all-absensi', async (req, res) => {
                 nama_rombel: absensi.nama_rombel,
                 tanggal: absensi.tanggal,
                 keterangan: absensi.keterangan,
+                pulang: absensi.pulang,
                 total_hadir: totals ? totals.total_hadir : 0, // Tambahkan total hadir
                 total_terlambat: totals ? totals.total_terlambat : 0, // Tambahkan total terlambat
                 total_alpa: totals ? totals.total_alpa : 0
@@ -245,66 +247,65 @@ router.get('/all-absensi', async (req, res) => {
         });
     }
 });
+// router.get('/total-hadir-per-kelas-per-hari', async (req, res) => {
+//     try {
+//         // Query untuk total hadir per kelas per hari
+//         const totalHadirPerKelasPerHariQuery = conn('absensi')
+//             .select(
+//                 'kelas.kelas',
+//                 'rombel_belajar.nama_rombel',
+//                 'absensi.tanggal',
+//                 conn.raw('COUNT(CASE WHEN absensi.keterangan = "Datang" THEN 1 END) AS total_hadir') // Menghitung total hadir
+//             )
+//             .leftJoin('siswa', 'absensi.id_siswa', 'siswa.id_siswa')
+//             .leftJoin('kelas', 'siswa.id_kelas', 'kelas.id_kelas')
+//             .leftJoin('rombel_belajar', 'siswa.id_rombel', 'rombel_belajar.id_rombel')
+//             .groupBy('kelas.kelas', 'rombel_belajar.nama_rombel', 'absensi.tanggal')
+//             .orderBy('absensi.tanggal', 'asc'); // Urutkan berdasarkan tanggal
 
-router.get('/total-hadir-per-kelas-per-hari', async (req, res) => {
-    try {
-        // Query untuk total hadir per kelas per hari
-        const totalHadirPerKelasPerHariQuery = conn('absensi')
-            .select(
-                'kelas.kelas',
-                'rombel_belajar.nama_rombel',
-                'absensi.tanggal',
-                conn.raw('COUNT(CASE WHEN absensi.keterangan = "Datang" THEN 1 END) AS total_hadir') // Menghitung total hadir
-            )
-            .leftJoin('siswa', 'absensi.id_siswa', 'siswa.id_siswa')
-            .leftJoin('kelas', 'siswa.id_kelas', 'kelas.id_kelas')
-            .leftJoin('rombel_belajar', 'siswa.id_rombel', 'rombel_belajar.id_rombel')
-            .groupBy('kelas.kelas', 'rombel_belajar.nama_rombel', 'absensi.tanggal')
-            .orderBy('absensi.tanggal', 'asc'); // Urutkan berdasarkan tanggal
+//         // Eksekusi query
+//         const totalHadirPerKelasPerHariData = await totalHadirPerKelasPerHariQuery;
 
-        // Eksekusi query
-        const totalHadirPerKelasPerHariData = await totalHadirPerKelasPerHariQuery;
+//         // Kelompokkan data berdasarkan kelas dan nama rombel
+//         const groupedData = totalHadirPerKelasPerHariData.reduce((acc, curr) => {
+//             // Kombinasikan kelas dan rombel sebagai key grup
+//             const key = `${curr.kelas}-${curr.nama_rombel}`;
 
-        // Kelompokkan data berdasarkan kelas dan nama rombel
-        const groupedData = totalHadirPerKelasPerHariData.reduce((acc, curr) => {
-            // Kombinasikan kelas dan rombel sebagai key grup
-            const key = `${curr.kelas}-${curr.nama_rombel}`;
+//             // Jika grup belum ada, buat objek baru
+//             if (!acc[key]) {
+//                 acc[key] = {
+//                     kelas: curr.kelas,
+//                     nama_rombel: curr.nama_rombel,
+//                     hadir_per_hari: [] // Menyimpan hadir per hari
+//                 };
+//             }
 
-            // Jika grup belum ada, buat objek baru
-            if (!acc[key]) {
-                acc[key] = {
-                    kelas: curr.kelas,
-                    nama_rombel: curr.nama_rombel,
-                    hadir_per_hari: [] // Menyimpan hadir per hari
-                };
-            }
+//             // Tambahkan data total hadir per tanggal ke dalam grup
+//             acc[key].hadir_per_hari.push({
+//                 tanggal: curr.tanggal,
+//                 total_hadir: curr.total_hadir
+//             });
 
-            // Tambahkan data total hadir per tanggal ke dalam grup
-            acc[key].hadir_per_hari.push({
-                tanggal: curr.tanggal,
-                total_hadir: curr.total_hadir
-            });
+//             return acc;
+//         }, {});
 
-            return acc;
-        }, {});
+//         // Mengubah objek ke dalam bentuk array
+//         const result = Object.values(groupedData);
 
-        // Mengubah objek ke dalam bentuk array
-        const result = Object.values(groupedData);
-
-        // Kirimkan data
-        res.status(200).json({
-            Status: 200,
-            message: "ok",
-            data: result
-        });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({
-            Status: 500,
-            error: 'Internal Server Error'
-        });
-    }
-});
+//         // Kirimkan data
+//         res.status(200).json({
+//             Status: 200,
+//             message: "ok",
+//             data: result
+//         });
+//     } catch (error) {
+//         console.error(error);
+//         res.status(500).json({
+//             Status: 500,
+//             error: 'Internal Server Error'
+//         });
+//     }
+// });
 
 router.post('/add-siswa-absensi-sakit', async (req, res) => {
     try {
@@ -496,6 +497,9 @@ router.get('/all-siswa-absensi-alpa', async (req, res) => {
         res.status(500).json({ message: 'Terjadi kesalahan pada server.', error });
     }
 });
+
+
+
 
 // router untuk mengatasi sakit di halaman utama
 // Rute yang benar adalah '/sakit'
