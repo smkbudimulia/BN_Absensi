@@ -241,8 +241,6 @@ router.post('/instansi', upload.single('logo'), async (req, res) => {
         res.status(500).json({ success: false, message: 'Internal Server Error' });
     }
 });
-
-
 // Ambil semua data instansi
 router.get('/all-instansi', async (req, res) => {
     try {
