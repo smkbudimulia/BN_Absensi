@@ -17,6 +17,71 @@ app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
 
+router.post('/login-guru', async (req, res) => {
+    const { email, pas } = req.body;
+
+    // Memeriksa apakah ada data yang dikirim atau tidak
+    if (!email || !pas) {
+        return res.status(400).json({ error: 'Email dan Password tidak boleh kosong' });
+    }
+
+    try {
+        // Mencari guru berdasarkan email
+        const guru = await conn('detail_guru')
+            .where('email', email)
+            .first();
+
+        if (!guru) {
+            return res.status(401).json({ error: 'Email atau Password salah' });
+        }
+
+        // Bandingkan password yang diinputkan dengan hash yang disimpan
+        const isMatch = await bcrypt.compare(pas, guru.pas);
+
+        if (!isMatch) {
+            return res.status(401).json({ error: 'Email atau Password salah' });
+        }
+
+        // Membuat payload untuk JWT
+        const payload = {
+            id_guru: guru.id_guru,
+            email: guru.email,
+            status: guru.status,
+        };
+
+        // Membuat token JWT
+        const token = jwt.sign(payload, process.env.TOKEN_PRIVATE, { expiresIn: '1h' });
+
+        // Set token sebagai http-only cookie
+        res.cookie('token', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production', // Gunakan HTTPS di production
+            maxAge: 60000 // 1 menit
+        });
+
+        // Tambahkan header 'token' ke dalam respons
+        res.set('token', token);
+
+        // Mengirimkan token dan data pengguna sebagai respon
+        res.json({
+            success: true,
+            message: 'Login berhasil',
+            token: token,
+            data: {
+                id_guru: guru.id_guru,
+                nama_guru: guru.nama_guru,
+                email: guru.email,
+                status: guru.status
+                // Tambahkan data lain yang ingin dikirim ke frontend
+            }
+        });
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: 'Ada Kesalahan' });
+    }
+});
+
 //proses untuk login dan membuat token
 router.post('/login', async (req, res) => {
     const { username, password } = req.body;
@@ -82,6 +147,7 @@ router.post('/login', async (req, res) => {
         res.status(500).json({ error: 'Ada Kesalahan' });
     }
 });
+
 
 
 //proses logout dan menghapus token dari cookei browser pengguna

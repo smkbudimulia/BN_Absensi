@@ -3,6 +3,7 @@ const router = express.Router();
 const conn = require('../../Database/ConfigDB')// koneksi ke database
 // const bcrypt = require('bcrypt')
 const verifyToken = require('../../middleware/jwToken')
+const bcrypt = require('bcrypt')
 
 
 // Fungsi untuk mengacak karakter untuk ID
@@ -160,6 +161,9 @@ router.post('/add-guru', async (req, res) => {
                         continue; // Lewati iterasi jika data sudah ada
                     }
 
+                    const hashPass = await bcrypt.hash(pas, 11)
+                    
+
                     // ID acak per iterasi
                     const idAcak = generateRandomString(5);
                     const addData = {
@@ -178,7 +182,7 @@ router.post('/add-guru', async (req, res) => {
                     const detailData = {
                         id_guru: idAcak,
                         email, 
-                        pas, 
+                        pas: hashPass, 
                         foto, 
                         staf,
                         walas, 
