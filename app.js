@@ -3,7 +3,7 @@ const cors = require('cors'); // Import cors
 const app = express()
 
 //cronJOB
-const cronJob = require('./jobs/cronJob'); // Jalankan Cron Job
+// const cronJob = require('./jobs/cronJob'); // Jalankan Cron Job
 
 // const verifyToken = require('../../middleware/jwToken')
 const cookieParser = require('cookie-parser')
@@ -79,7 +79,7 @@ app.use('/setting', EPSetting)
 app.use('/absensi', EPAbsensi)
 
 // Cron job otomatis dijalankan setiap hari pukul yang ditentukan
-require('./jobs/cronJob'); // Pastikan cron job terjadwal
+require('./jobs/nyoba'); // Pastikan cron job terjadwal
 
 app.listen(PORT, ()=>{
     console.log(`brtjalan di PORT http://localhost:${PORT}`)
