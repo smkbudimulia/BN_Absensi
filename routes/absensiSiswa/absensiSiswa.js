@@ -174,6 +174,146 @@ router.post('/siswa-abseni', async (req, res) => {
     }
 });
 
+// router.post('/siswa-abseni', async (req, res) => {
+//     try {
+//         const { id_siswa } = req.body;
+
+//         if (!id_siswa) {
+//             return res.status(400).json({ message: 'ID siswa wajib diisi.' });
+//         }
+
+//         // Ambil nama siswa berdasarkan ID siswa
+//         const siswa = await conn('siswa')
+//             .select('nama_siswa')
+//             .where({ id_siswa })
+//             .first();
+
+//         if (!siswa) {
+//             return res.status(404).json({ message: 'Siswa tidak ditemukan.' });
+//         }
+
+//         let nama_siswa = siswa.nama_siswa;
+//         const namaArray = nama_siswa.split(' ');
+
+//         if (namaArray.length > 1) {
+//             nama_siswa = namaArray[1];
+//         } else {
+//             nama_siswa = namaArray[0];
+//         }
+
+//         const currentTime = moment();
+//         const currentDate = currentTime.format("YYYY-MM-DD");
+//         const hariSekarang = moment().locale('id').format('dddd');
+
+//         const settings = await conn('setting').where({ hari: hariSekarang }).first();
+//         if (!settings) {
+//             return res.status(400).json({
+//                 message: `Aturan untuk hari ${hariSekarang} tidak ditemukan. Silakan tambahkan pengaturan terlebih dahulu.`,
+//             });
+//         }
+
+//         const jamMasukArray = JSON.parse(settings.jam_masuk || '[]');
+//         const jamTerlambatArray = JSON.parse(settings.jam_terlambat || '[]');
+//         const jamPulangArray = JSON.parse(settings.jam_pulang || '[]');
+
+//         if (jamMasukArray.length < 2 || jamTerlambatArray.length < 2 || jamPulangArray.length < 2) {
+//             return res.status(400).json({
+//                 message: 'Format jam masuk, terlambat, atau pulang tidak valid.',
+//             });
+//         }
+
+//         const [jamMasukAwal, jamMasukAkhir] = jamMasukArray;
+//         const [jamTerlambatAwal, jamTerlambatAkhir] = jamTerlambatArray;
+//         const [jamPulangAwal, jamPulangAkhir] = jamPulangArray;
+
+//         const absensiHariIni = await conn('absensi')
+//             .where({ id_siswa, tanggal: currentDate })
+//             .first();
+
+//         let keterangan = '';
+//         let waktuDatang = null;
+//         let waktuPulang = null;
+
+//         if (absensiHariIni && absensiHariIni.pulang) {
+//             return res.status(400).json({
+//                 message: `${nama_siswa} sudah pulang.`,
+//             });
+//         }
+
+//         if (absensiHariIni && absensiHariIni.datang && !absensiHariIni.pulang) {
+//             if (!currentTime.isBetween(moment(jamPulangAwal, "HH:mm"), moment(jamPulangAkhir, "HH:mm"), null, '[)')) {
+//                 return res.status(400).json({
+//                     message: 'Belum waktu pulang.',
+//                 });
+//             }
+//         }
+
+//         if (currentTime.isAfter(moment(jamPulangAwal, "HH:mm"))) {
+//             const siswaBelumAbsen = await conn('siswa')
+//                 .whereNotExists(
+//                     conn('absensi')
+//                         .whereRaw('absensi.id_siswa = siswa.id_siswa')
+//                         .where('absensi.tanggal', currentDate)
+//                 )
+//                 .select('id_siswa');
+
+//             for (const siswa of siswaBelumAbsen) {
+//                 await conn('absensi').insert({
+//                     id_absen: generateRandomString(5),
+//                     id_siswa: siswa.id_siswa,
+//                     keterangan: 'Alpa',
+//                     tanggal: currentDate,
+//                 });
+//             }
+
+//             return res.status(200).json({ message: 'Siswa yang belum absen telah diberi status Alpa.' });
+//         }
+
+//         if (!absensiHariIni) {
+//             if (currentTime.isAfter(moment(jamPulangAkhir, "HH:mm"))) {
+//                 return res.status(200).json({
+//                     message: 'Maaf, Pembelajaran hari ini telah selesai :).',
+//                 });
+//             }
+
+//             if (!currentTime.isBetween(moment(jamMasukAwal, "HH:mm"), moment(jamTerlambatAkhir, "HH:mm"), null, '[]')) {
+//                 return res.status(400).json({
+//                     message: 'Kamu absen di luar jam yang ditentukan.',
+//                 });
+//             }
+
+//             if (currentTime.isBetween(moment(jamMasukAwal, "HH:mm"), moment(jamTerlambatAwal, "HH:mm"), null, '[]')) {
+//                 keterangan = 'Datang';
+//                 waktuDatang = currentTime.format("HH:mm");
+//             } else if (currentTime.isBetween(moment(jamTerlambatAwal, "HH:mm"), moment(jamTerlambatAkhir, "HH:mm"), null, '[]')) {
+//                 keterangan = 'Terlambat';
+//                 waktuDatang = currentTime.format("HH:mm");
+//             }
+
+//             const idAcak = generateRandomString(5);
+//             const dataAbsensi = {
+//                 id_absen: idAcak,
+//                 id_siswa,
+//                 keterangan,  
+//                 tanggal: currentDate,
+//                 datang: waktuDatang,
+//             };
+
+//             await conn('absensi').insert(dataAbsensi);
+//             const message =
+//                 keterangan === 'Terlambat'
+//                     ? `${nama_siswa} Terlambat`
+//                     : `${nama_siswa} Hadir`;
+
+//             return res.status(201).json({ message, data: dataAbsensi });
+//         }
+
+//         return res.status(400).json({ message: 'Terjadi kesalahan yang tidak terduga.' });
+//     } catch (error) {
+//         console.error(error);
+//         res.status(500).json({ message: 'Terjadi kesalahan pada server.', error });
+//     }
+// });
 
 router.get('/all-absensi', async (req, res) => {
     try {
@@ -437,40 +577,87 @@ router.get('/all-siswa-absensi-izin', async (req, res) => {
 
 router.post('/add-siswa-absensi-alpa', async (req, res) => {
     try {
-        const { id_siswa, keterangan } = req.body;
+        const { id_siswa, jenis } = req.body; // jenis = "datang" atau "pulang"
 
         if (!id_siswa) {
             return res.status(400).json({ message: 'ID siswa wajib diisi.' });
         }
 
-        if (keterangan !== 'Alpa') {
-            return res.status(400).json({ message: 'Keterangan harus "Alpa".' });
-        }
+        const moment = require("moment");
+        const iniWaktu = moment().format("HH:mm"); // Format waktu (contoh: 07:20)
+        const currentDate = moment().format("YYYY-MM-DD"); // Format tanggal (contoh: 2025-03-11)
 
-        const currentTime = moment(); // Waktu sekarang
-        const currentDate = currentTime.format("YYYY-MM-DD"); // Tanggal saat ini
+        // Ambil hari ini dalam format nama hari (contoh: "Senin", "Selasa", dst.)
+        const hariIni = moment().locale("id").format("dddd");
 
-        // Ambil data absensi siswa untuk hari ini
+        const setting = await conn("setting")
+        .where("hari", hariIni) // Pastikan query mengambil hari ini
+        .first();
+        const jamDatang = setting?.jam_datang || "07:00";
+        const jamPulang = moment(setting.jam_pulang, "HH.mm").format("HH:mm"); 
+        
+
+        // Cek apakah siswa sudah memiliki absensi hari ini
         const absensiHariIni = await conn('absensi')
             .where({ id_siswa, tanggal: currentDate })
             .first();
 
-        // Jika tidak ada catatan absensi sebelumnya, catat "Izin"
+        if (!jenis || !["datang", "pulang"].includes(jenis)) {
+            return res.status(400).json({ message: 'Jenis absensi harus "datang" atau "pulang".' });
+        }
+
+        // *Cegah Absen Pulang Sebelum Absen Datang*
+        if (jenis === "pulang" && (!absensiHariIni || !absensiHariIni.datang)) {
+            return res.status(400).json({ message: "Tidak bisa absen pulang sebelum absen datang!" });
+        }
+
+        // *Cegah Absen Datang Jika Sudah Absen*
+        if (jenis === "datang" && absensiHariIni?.datang) {
+            return res.status(400).json({ message: "Sudah absen datang hari ini!" });
+        }
+
+        // *Cegah Absen Pulang Sebelum Jam Pulang*
+        // if (jenis === "pulang" && iniWaktu < jamPulang) {
+        //     return res.status(400).json({ message: "Belum jam pulang!" });
+        // }
+        if (moment(iniWaktu, "HH:mm").isBefore(moment(jamPulang, "HH:mm"))) {
+        } else {
+        }
+
+        // Cek apakah siswa sudah absen datang
+        if (absensiHariIni?.datang) {
+            if (jenis === "datang") {
+                return res.status(400).json({ message: "Sudah absen datang hari ini!" });
+            }
+            // Cek apakah siswa mencoba absen pulang sebelum jam pulang
+            if (jenis === "pulang" && iniWaktu < jamPulang) {
+                return res.status(400).json({ message: "Belum jam pulang!" });
+            }
+        }
+
         if (!absensiHariIni) {
-            const idAcak = generateRandomString(5); // Buat ID unik
+            // Jika belum ada absensi, buat baru
+            const idAcak = generateRandomString(5);
             const dataAbsensi = {
                 id_absen: idAcak,
                 id_siswa,
-                keterangan: "Alpa",  // Status "Izin"
+                keterangan: "Ketinggalan",
                 tanggal: currentDate,
-                datang:"",
+                [jenis]: iniWaktu,
             };
 
             await conn('absensi').insert(dataAbsensi);
-            return res.status(201).json({ message: 'Absensi izin berhasil dicatat', data: dataAbsensi });
-        } else {
-            return res.status(400).json({ message: 'Absensi sudah tercatat untuk hari ini.' });
+            return res.status(201).json(`{ message: Absensi ${jenis} berhasil dicatat, data: dataAbsensi }`);
+        } else if (jenis === "pulang" && !absensiHariIni.pulang) {
+            // Hanya update jam pulang jika belum dicatat sebelumnya
+            await conn("absensi")
+                .where({ id_siswa, tanggal: currentDate })
+                .update({ pulang: iniWaktu });
+
+            return res.json(`{ message: Absensi pulang berhasil untuk siswa ${id_siswa} }`);
         }
+
+        return res.status(400).json({ message: "Tidak ada perubahan yang diperlukan." });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Terjadi kesalahan pada server.', error });
@@ -498,8 +685,51 @@ router.get('/all-siswa-absensi-alpa', async (req, res) => {
     }
 });
 
+// router.post("/update-absensi-pkl", async (req, res) => {
+//     try {
+//         const { kelasTerpilih } = req.body; // Data dari frontend
 
+//         console.log("Kelas PKL dipilih:", kelasTerpilih);
 
+//         // Hapus data lama, lalu masukkan yang baru
+//         await conn("config_pkl").del();
+//         await conn("config_pkl").insert(
+//             kelasTerpilih.map((item) => ({
+//                 id_kelas: item.id_kelas,
+//                 id_rombel: item.id_rombel,
+//             }))
+//         );
+
+//         res.json({ success: true, message: "Data kelas PKL berhasil diperbarui." });
+//     } catch (error) {
+//         console.error("Gagal memperbarui kelas PKL:", error);
+//         res.status(500).json({ success: false, message: "Terjadi kesalahan pada server." });
+//     }
+// });
+
+router.post("/update-absensi-pkl", async (req, res) => {
+    try {
+      const { kelasTerpilih } = req.body;
+      console.log("Data yang diterima:", kelasTerpilih); // Debugging
+  
+      if (kelasTerpilih.length === 0) {
+        // Hapus semua data PKL jika tidak ada kelas yang dipilih
+        await conn("config_pkl").del();
+      } else {
+        // Simpan atau perbarui data PKL
+        await conn("config_pkl")
+          .insert(kelasTerpilih)
+          .onConflict(["id_kelas", "id_rombel"])
+          .merge();
+      }
+  
+      res.json({ message: "Data berhasil disimpan" });
+    } catch (error) {
+      console.error("Gagal menyimpan data PKL:", error);
+      res.status(500).json({ message: "Gagal menyimpan data" });
+    }
+  });
+  
 
 // router untuk mengatasi sakit di halaman utama
 // Rute yang benar adalah '/sakit'

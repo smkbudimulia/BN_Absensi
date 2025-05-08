@@ -166,7 +166,7 @@ router.get('/total-kelas-siswa', async (req, res) => {
                 conn.raw('COUNT(CASE WHEN absensi.keterangan = "Alpa" THEN 1 END) AS total_alpa'),
                 conn.raw('COUNT(CASE WHEN absensi.keterangan = "Sakit" THEN 1 END) AS total_sakit'),
                 conn.raw('COUNT(CASE WHEN absensi.keterangan = "Izin" THEN 1 END) AS total_izin'),
-                conn.raw('COUNT(CASE WHEN absensi.pulang IS NOT NULL THEN 1 END) AS total_pulang')
+                conn.raw(`COUNT(CASE WHEN absensi.pulang IS NOT NULL AND absensi.pulang != '' AND absensi.pulang != '0000-00-00 00:00:00' AND (absensi.keterangan = "Datang" OR absensi.keterangan = "Terlambat")  THEN 1 END ) AS total_pulang`)           
             )
             .leftJoin('siswa', 'absensi.id_siswa', 'siswa.id_siswa')
             .leftJoin('kelas', 'siswa.id_kelas', 'kelas.id_kelas')
@@ -328,6 +328,60 @@ router.get('/nama-siswa-kelas', async (req, res) => {
 });
 
 router.get('/nama-siswa', async (req, res) => {
+    try {
+        // Dapatkan tanggal hari ini dalam format YYYY-MM-DD
+        const today = new Date().toISOString().split('T')[0];
+        const data = await conn('siswa')
+            .select(
+                'siswa.id_siswa',
+                'siswa.nis',
+                'siswa.id_kelas',
+                'siswa.id_rombel',
+                'siswa.nama_siswa',
+                'siswa.nomor_wali',
+                'kelas.kelas', // Nama kelas dari tabel kelas
+                'rombel_belajar.nama_rombel' // Nama rombel dari tabel rombel_belajar
+            )
+            .leftJoin('kelas', 'siswa.id_kelas', 'kelas.id_kelas')
+            .leftJoin('rombel_belajar', 'siswa.id_rombel', 'rombel_belajar.id_rombel')
+            .groupBy(
+                'siswa.nis',
+                'siswa.id_kelas',
+                'siswa.id_rombel',
+                'siswa.nama_siswa',
+                'siswa.nomor_wali',
+                'kelas.kelas',
+                'rombel_belajar.nama_rombel'
+            );
+
+        const result = data.map(item => ({
+            ...item,
+            kelas: `${item.kelas} ${item.nama_rombel}` // Menggabungkan nama kelas dan nama rombel
+        }));
+
+        if (data && data.length > 0) {
+            res.status(200).json({
+                Status: 200,
+                message: "ok",
+                data: result
+            });
+        } else {
+            res.status(200).json({
+                Status: 200,
+                message: "No data found",
+                data: []
+            });
+        }
+    } catch (error) {
+        console.error("Database query failed:", error.message);
+        res.status(500).json({
+            Status: 500,
+            error: 'Internal Server Error'
+        });
+    }
+});
+
+router.get('/nama-siswa-ketinggalan', async (req, res) => {
     try {
         // Dapatkan tanggal hari ini dalam format YYYY-MM-DD
         const today = new Date().toISOString().split('T')[0];
